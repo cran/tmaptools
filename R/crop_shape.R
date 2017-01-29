@@ -1,10 +1,12 @@
 #' Crop shape object
 #'
-#' Crop a shape object (from class \code{\link[sp:Spatial]{Spatial-class}}, \code{\link[raster:Raster-class]{Raster}}, or \code{sf}). A shape file \code{x} is cropped, either by the bounding box of another shape \code{y}, or by \code{y} itself if it is a SpatialPolygons object and \code{polygon=TRUE}.
+#' Crop a shape object (from class \code{\link[sp:Spatial]{Spatial}}, \code{\link[raster:Raster-class]{Raster}}, or \code{sf}). A shape file \code{x} is cropped, either by the bounding box of another shape \code{y}, or by \code{y} itself if it is a SpatialPolygons object and \code{polygon = TRUE}.
+#'
+#' This function is similar to \code{\link[raster:crop]{crop}} from the \code{raster} package. The main difference is that \code{crop_shape} also allows to crop using a polygon instead of a rectangle.
 #'
 #' @param x shape object, i.e. an object from class \code{\link[sp:Spatial]{Spatial-class}}, \code{\link[raster:Raster-class]{Raster}}, or \code{sf}.
 #' @param y bounding box (2 by 2 matrix), an \code{\link[raster:extent]{extent}}, or a shape object from which the bounding box is extracted (unless \code{polygon} is \code{TRUE} and \code{x} is a \code{SpatialPolygons} object).
-#' @param polygon should \code{x} be cropped by the polygon defined by \code{y}. If \code{FALSE} (default), \code{x} is cropped by the bounding box of \code{x}. Polygon cropping only works when \code{x} is a spatial object and \code{y} is a \code{SpatialPolygons} object.
+#' @param polygon should \code{x} be cropped by the polygon defined by \code{y}? If \code{FALSE} (default), \code{x} is cropped by the bounding box of \code{x}. Polygon cropping only works when \code{x} is a spatial object and \code{y} is a \code{SpatialPolygons} object.
 #' @param ... arguments passed on to \code{\link[raster:crop]{crop}}
 #' @export
 #' @seealso \code{\link{bb}}
@@ -76,8 +78,8 @@ crop_shape <- function(x, y, polygon = FALSE, ...) {
             x2 <- raster::trim(raster::mask(x, y))
         }
 	} else {
-	  # bounding box crop
-	  x2 <- crop(x, y, ...)
+	  # bounding box crop (suppress warnings, because projections may not be perfectly identical)
+	  x2 <- suppressWarnings(crop(x, y, ...))
 
 	  if (sp2r2sp) {
 	    if (hasData) data <- get_raster_data(x2)

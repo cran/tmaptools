@@ -42,17 +42,25 @@ A shape object, in the same format as \code{shp}
 \description{
 Aggregate spatial polygons, spatial lines or raster objects. For spatial polygons and lines, the units will be merged with the \code{by} variable. For rasters, the \code{fact} parameter determined how many rasters cells are aggregated both horizontally and vertically. Per data variable, an aggregation formula can be specified, by default mean for numeric and modal for categorical varaibles.
 }
+\details{
+This function is similar to \code{\link[raster:aggregate]{aggregate}} from the \code{raster} package. However, the aggregation can be specified in more detail: weights can be used (e.g. polygon area sizes). Also, an aggregation function can be specified per variable or raster layer. It is also possible to specify a general function for numeric data and a function for categorical data.
+
+By default, the data is not aggregated. In this case, this function is similar to \code{unionSpatialPolygons} from the \code{maptools} package. The only difference is way the aggregate-by variable is specified. When using \code{unionSpatialPolygons}, the values have to be assigned to \code{IDs} whereas when using \code{aggregate_map} the data variable name can be assigned to \code{by}.
+
+The underlying functions of \code{aggregate_map} for \code{Spatial} objects are \code{\link[rgeos:gUnaryUnion]{gUnaryUnion}}, \code{\link[rgeos:gUnionCascaded]{gUnionCascaded}}, and \code{\link[rgeos:gLineMerge]{gLineMerge}}. For \code{Raster} objects, the \code{\link[raster:aggregate]{aggregate}} is used.
+}
 \examples{
-\dontrun{
 if (require(tmap)) {
     data(land)
 
     # original map
     qtm(land, raster="cover_cls")
 
+    \dontrun{
     # map decreased by factor 4 for each dimension
     land4 <- aggregate_map(land, fact=4, agg.fun="modal")
     qtm(land4, raster="cover_cls")
+    }
 
     # map decreased by factor 8, where the variable trees is
     # aggregated with mean, min, and max
@@ -69,7 +77,7 @@ if (require(tmap)) {
     # aggregate Dutch municipalities to provinces
     NLD_prov2 <- aggregate_map(NLD_muni, by="province",
         agg.fun = list(population="sum", origin_native="mean", origin_west="mean",
-    				   origin_non_west="mean", name="modal"), weights = "population")
+        origin_non_west="mean", name="modal"), weights = "population")
 
     # see original provinces data
     NLD_prov@data[, c("name", "population", "origin_native", "origin_west", "origin_non_west")]
@@ -79,8 +87,7 @@ if (require(tmap)) {
 
     # largest municipalities in area per province
     aggregate_map(NLD_muni, by="province",
-                  agg.fun = list(name="modal"), weights = "AREA")@data
-    }
+        agg.fun = list(name="modal"), weights = "AREA")@data
 }
 }
 
