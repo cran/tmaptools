@@ -15,7 +15,7 @@
 #' @return shape in the smae class as \code{shp}
 #' @export
 simplify_shape <- function(shp, fact = 0.1, keep.units=FALSE, keep.subunits=FALSE, ...) {
-    is_sf <- inherits(shp, "sf")
+    is_sf <- inherits(shp, c("sf", "sfc"))
 
     if (is_sf) shp <- as(shp, "Spatial")
     if (!inherits(shp, c("SpatialLines", "SpatialPolygons"))) stop("shp is not a SpatialPolygons or SpatialLines object")
@@ -26,6 +26,10 @@ simplify_shape <- function(shp, fact = 0.1, keep.units=FALSE, keep.subunits=FALS
         if (inherits(shp, "SpatialLines")) shp <- SpatialLinesDataFrame(shp, data.frame(UNIT__NR = 1L:length(shp)), match.ID = FALSE)
         if (inherits(shp, "SpatialPolygons")) shp <- SpatialPolygonsDataFrame(shp, data.frame(UNIT__NR = 1L:length(shp)), match.ID = FALSE)
     } else {
+        # shape names are stored, because ms_simplify does not differentiate between upper- and lowercase
+        dataNames <- names(shp)
+        names(shp) <- paste(dataNames, 1L:length(dataNames), sep ="__")
+
         shp$UNIT__NR <- 1L:length(shp)
     }
 
@@ -36,6 +40,7 @@ simplify_shape <- function(shp, fact = 0.1, keep.units=FALSE, keep.subunits=FALS
 
     if (hasData) {
         x@data[, c("rmapshaperid", "UNIT__NR")] <- list()
+        names(x) <- dataNames
     } else {
         if (inherits(x, "SpatialLinesDataFrame")) x <- as(x, "SpatialLines")
         if (inherits(x, "SpatialPolygonsDataFrame")) x <- as(x, "SpatialPolygons")

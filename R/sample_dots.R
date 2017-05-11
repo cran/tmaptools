@@ -26,7 +26,7 @@
 sample_dots <- function(shp, vars=NULL, convert2density=FALSE, nrow=NA, ncol=NA, N=250000, npop=NA, n=10000, w=NA, shp.id=NULL, var.name="class", var.labels=vars, target="metric", orig=NA, to=NA, randomize=TRUE, output = c("points", "grid"), ...) {
 	args <- list(...)
 
-	is_sf <- inherits(shp, "sf")
+	is_sf <- inherits(shp, c("sf", "sfc"))
 	if (is_sf) shp <- as(shp, "Spatial")
 
 	bbx <- shp@bbox
@@ -59,6 +59,7 @@ sample_dots <- function(shp, vars=NULL, convert2density=FALSE, nrow=NA, ncol=NA,
 
 		# calculate densities
 		dens_args <- args[names(args) %in% c("total.area", "suffix")]
+		dens_args$suffix <- "" # overwrite suffix (to maintain vars)
 		data <- do.call("calc_densities", args = c(list(shp=shp, var=vars, target=target, orig=orig, to=to, drop=FALSE), dens_args))
 		data[is.na(data)] <- 0
 	} else {
