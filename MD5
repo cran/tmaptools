@@ -1,6 +1,6 @@
-38ffed07bf5ff94c8691a6a9cbcae27d *DESCRIPTION
+a7a27274ac1eb4f6f18cc7f5cf3c858d *DESCRIPTION
 1cdc2efb760e697935e2c056c467e204 *NAMESPACE
-ff9955142a913daab1b655406ac5094d *NEWS
+c79d9ec0a4d932053b58e48967c6b7dc *NEWS
 58bb66e463b2cb854c9443e6296f73dc *R/aggregate_map.R
 c0f929650475bf37aa86b5661c60918c *R/append_data.R
 e2e98f8d8dce736443220a5a92920eb5 *R/approx_areas.R
@@ -29,12 +29,12 @@ e8c5848c9317ab02bd1f1420c5e486e4 *R/projection_units.R
 63853ff7fe5c6de49a4dc6ae78b25e96 *R/sbind.R
 1df23ad8ad3efb7f4621e11dfbb605db *R/set_projection.R
 3261d7c7d63469ff976fdb11bdd091bf *R/simplify_shape.R
-ffaf0a44f3892d29c4a276539b1dd421 *R/smooth_map.R
+79077f0282615191bd38634798cf7226 *R/smooth_map.R
 af96da4047b0bb4a1e366d873502e6fd *R/smooth_raster_cover.R
 11b9193d367269d8d919dc3425807d9a *R/split_shape.R
 4f7e21b6b32b33e382e99ff49e6624fa *R/to_raster.R
-b926f676d7c77c5ac43c2de355243567 *R/xxx_raster.R
-e8efadb1f1cc5caea0e007893a5ec783 *R/xxx_scales.R
+0c5089fa8d7e52abbe37f3f9d2868d78 *R/xxx_raster.R
+a9d134ce7e7992d67b849d2560c396d3 *R/xxx_scales.R
 bd339d29b4dca10765f529931eea4363 *man/aggregate_map.Rd
 2e3cd0a0d9cb7b245860db9a8529f45a *man/append_data.Rd
 048f70da0abd9943862d0a85c58a8aa5 *man/approx_areas.Rd
