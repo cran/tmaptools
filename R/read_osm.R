@@ -2,7 +2,7 @@
 #'
 #' Read Open Street Map data. Either OSM tiles are read and returned as a spatial raster, or vectorized OSM data are queried and returned as spatial polygons, lines, and/or points.
 #'
-#' @param x object that can be coerced to a bounding box with \code{\link{bb}} (e.g. an existing bounding box or a shape), or an \code{\link[osmar:osmar]{osmar}} object. In the first case, other arguments can be passed on to \code{\link{bb}} (see \code{...}). If an existing bounding box is specified in projected coordinates, plesae specify \code{current.projection}.
+#' @param x object that can be coerced to a bounding box with \code{\link{bb}} (e.g. an existing bounding box or a shape), or an \code{\link[osmar:osmar]{osmar}} object. In the first case, other arguments can be passed on to \code{\link{bb}} (see \code{...}). If an existing bounding box is specified in projected coordinates, please specify \code{current.projection}.
 #' @param raster logical that determines whether a raster or vector shapes are returned. In the latter case, specify the vector selections (see argument \code{...}). By default, \code{raster=TRUE} if no vector selections are made, and \code{raster=FALSE} otherwise.
 #' @param zoom passed on to \code{\link[OpenStreetMap:openmap]{openmap}}. Only applicable when \code{raster=TRUE}.
 #' @param type tile provider, by default \code{"osm"}, which corresponds to OpenStreetMap Mapnik. See \code{\link[OpenStreetMap:openmap]{openmap}} for options. Only applicable when \code{raster=TRUE}.
@@ -16,6 +16,7 @@
 #' @importFrom raster raster
 #' @export
 #' @example ./examples/read_osm.R
+#' @references Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 #' @return The output of \code{read_osm} is a \code{\link[sp:SpatialGridDataFrame]{SpatialGridDataFrame}} if \code{raster=TRUE}, and otherwise a named list of \code{\link[sp:SpatialPolygonsDataFrame]{SpatialPolygonsDataFrame}}, \code{\link[sp:SpatialLinesDataFrame]{SpatialLinesDataFrame}}, and/or \code{\link[sp:SpatialPointsDataFrame]{SpatialPointsDataFrame}} objects. The names of this list are the names of arguments defined at \code{...}.
 read_osm <- function(x, raster=NA, zoom=NULL, type="osm", minNumTiles=NULL, mergeTiles=NULL, ...) {
 	if (!get(".internet", envir = .TMAPTOOLS_CACHE)) stop("No internet connection found.")

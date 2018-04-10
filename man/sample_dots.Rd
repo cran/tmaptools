@@ -13,17 +13,17 @@ sample_dots(shp, vars = NULL, convert2density = FALSE, nrow = NA,
 \arguments{
 \item{shp}{A shape object, more specifically, a \code{\link[sp:SpatialPolygonsDataFrame]{SpatialPolygonsDataFrame}} or an \code{sf} object that can be coerced as such.}
 
-\item{vars}{Names of one or more variables that are contained in \code{shp}. If \code{vars} is not provided, the dots are sampled uniformly. If \code{vars} consists of one variable name, the dots are sampled according to the distribution of the corresponding variable. If \code{vars} consist of more than one variable names, then the dots are sampled according to the distributions of those variables. A categorical variable is added that contains the distrubtion classes (see \code{var.name}).}
+\item{vars}{Names of one or more variables that are contained in \code{shp}. If \code{vars} is not provided, the dots are sampled uniformly. If \code{vars} consists of one variable name, the dots are sampled according to the distribution of the corresponding variable. If \code{vars} consist of more than one variable names, then the dots are sampled according to the distributions of those variables. A categorical variable is added that contains the distribution classes (see \code{var.name}).}
 
 \item{convert2density}{Should the variables be converted to density values? Density values are used for the sampling algorithm, so use \code{TRUE} when the values are absolute counts.}
 
 \item{nrow}{Number of grid rows}
 
-\item{ncol}{Number of grid colums}
+\item{ncol}{Number of grid columns}
 
 \item{N}{Number of grid points}
 
-\item{npop}{Population total. If \code{NA}, it is recontructed from the data. If density values are specified, the population total is approximated using the polygon areas (see also \code{target}, \code{orig} and \code{to}).}
+\item{npop}{Population total. If \code{NA}, it is reconstructed from the data. If density values are specified, the population total is approximated using the polygon areas (see also \code{target}, \code{orig} and \code{to}).}
 
 \item{n}{Number of sampled dots}
 
@@ -60,4 +60,7 @@ if (require(tmap)) {
     	tm_layout("One dot represents one million people", title.position = c("right", "bottom"))
 }
 }
+}
+\references{
+Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 }

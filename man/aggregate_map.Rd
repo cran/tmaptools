@@ -40,7 +40,7 @@ These predefined functions can be used: \code{"mean"}, \code{"modal"}, \code{"fi
 A shape object, in the same format as \code{shp}
 }
 \description{
-Aggregate spatial polygons, spatial lines or raster objects. For spatial polygons and lines, the units will be merged with the \code{by} variable. For rasters, the \code{fact} parameter determined how many rasters cells are aggregated both horizontally and vertically. Per data variable, an aggregation formula can be specified, by default mean for numeric and modal for categorical varaibles.
+Aggregate spatial polygons, spatial lines or raster objects. For spatial polygons and lines, the units will be merged with the \code{by} variable. For rasters, the \code{fact} parameter determined how many rasters cells are aggregated both horizontally and vertically. Per data variable, an aggregation formula can be specified, by default mean for numeric and modal for categorical variables.
 }
 \details{
 This function is similar to \code{\link[raster:aggregate]{aggregate}} from the \code{raster} package. However, the aggregation can be specified in more detail: weights can be used (e.g. polygon area sizes). Also, an aggregation function can be specified per variable or raster layer. It is also possible to specify a general function for numeric data and a function for categorical data.
@@ -89,4 +89,7 @@ if (require(tmap)) {
     aggregate_map(NLD_muni, by="province",
         agg.fun = list(name="modal"), weights = "AREA")@data
 }
+}
+\references{
+Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 }

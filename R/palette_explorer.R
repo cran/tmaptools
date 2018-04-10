@@ -79,13 +79,14 @@ is_light <- function(col) {
 
 #' Explore color palettes
 #'
-#' This interactive tool shows all Color Brewer palettes, where the number of colors can be adjusted as well as the constrast range. Categorical (qualitative) palettes can be stretched when the number of colors exceeds the number of palette colors. Output code needed to get the desired color values is generated. Finally, all colors can be tested for color blindness.
+#' This interactive tool shows all Color Brewer palettes, where the number of colors can be adjusted as well as the contrast range. Categorical (qualitative) palettes can be stretched when the number of colors exceeds the number of palette colors. Output code needed to get the desired color values is generated. Finally, all colors can be tested for color blindness.
 #' @export
 #' @importFrom grDevices col2rgb
 #' @importFrom dichromat dichromat
 #' @example ./examples/palette_explorer.R
 #' @seealso \code{\link{get_brewer_pal}}, \code{\link[dichromat:dichromat]{dichromat}}, \code{\link[RColorBrewer:RColorBrewer]{RColorBrewer}}
 #' @references \url{http://www.color-blindness.com/types-of-color-blindness/}
+#' @references Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 palette_explorer <- function() {
     if (!requireNamespace("shiny")) stop("shiny package needed for this function to work. Please install it.", call. = FALSE)
     if (!requireNamespace("shinyjs")) stop("shinyjs package needed for this function to work. Please install it.", call. = FALSE)

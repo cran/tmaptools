@@ -54,7 +54,7 @@ An existing bounding box (defined by \code{x}) can be modified as follows:
 A new bounding box can be created from scratch as follows:
 \itemize{
 \item Using the extension factor \code{ext}.
-\item Setting the center coorinates \code{cx} and \code{cy}, together with the \code{width} and \code{height}.
+\item Setting the center coordinates \code{cx} and \code{cy}, together with the \code{width} and \code{height}.
 \item Setting the x and y limits \code{xlim} and \code{ylim}
 }
 }
@@ -85,6 +85,9 @@ if (require(tmap)) {
     tm_shape(World, bbox=bb_italy) + tm_polygons()
     # shorter alternative: tm_shape(World, bbox="Italy") + tm_polygons()
 }
+}
+\references{
+Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 }
 \seealso{
 \code{\link{geocode_OSM}}

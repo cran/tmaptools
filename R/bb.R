@@ -11,7 +11,7 @@
 #' A new bounding box can be created from scratch as follows:
 #' \itemize{
 #' \item Using the extension factor \code{ext}.
-#' \item Setting the center coorinates \code{cx} and \code{cy}, together with the \code{width} and \code{height}.
+#' \item Setting the center coordinates \code{cx} and \code{cy}, together with the \code{width} and \code{height}.
 #' \item Setting the x and y limits \code{xlim} and \code{ylim}
 #' }
 #'
@@ -39,6 +39,7 @@
 #' @importFrom rgeos gIntersection
 #' @example ./examples/bb.R
 #' @seealso \code{\link{geocode_OSM}}
+#' @references Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 #' @export
 bb <- function(x=NA, ext=NULL, cx=NULL, cy=NULL, width=NULL, height=NULL, xlim=NULL, ylim=NULL, relative = FALSE, current.projection=NULL, projection=NULL, as.extent=FALSE) {
 

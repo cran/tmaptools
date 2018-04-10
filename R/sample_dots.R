@@ -3,12 +3,12 @@
 #' Sample dots from spatial polygons according to a spatial distribution of a population. The population may consist of classes. The output, a SpatialPointsDataFrame, can be used to create a dot map (see \code{\link[tmap:tm_dots]{tm_dots}}), where the dots are colored according to the classes.
 #'
 #' @param shp A shape object, more specifically, a \code{\link[sp:SpatialPolygonsDataFrame]{SpatialPolygonsDataFrame}} or an \code{sf} object that can be coerced as such.
-#' @param vars Names of one or more variables that are contained in \code{shp}. If \code{vars} is not provided, the dots are sampled uniformly. If \code{vars} consists of one variable name, the dots are sampled according to the distribution of the corresponding variable. If \code{vars} consist of more than one variable names, then the dots are sampled according to the distributions of those variables. A categorical variable is added that contains the distrubtion classes (see \code{var.name}).
+#' @param vars Names of one or more variables that are contained in \code{shp}. If \code{vars} is not provided, the dots are sampled uniformly. If \code{vars} consists of one variable name, the dots are sampled according to the distribution of the corresponding variable. If \code{vars} consist of more than one variable names, then the dots are sampled according to the distributions of those variables. A categorical variable is added that contains the distribution classes (see \code{var.name}).
 #' @param convert2density Should the variables be converted to density values? Density values are used for the sampling algorithm, so use \code{TRUE} when the values are absolute counts.
 #' @param nrow Number of grid rows
-#' @param ncol Number of grid colums
+#' @param ncol Number of grid columns
 #' @param N Number of grid points
-#' @param npop Population total. If \code{NA}, it is recontructed from the data. If density values are specified, the population total is approximated using the polygon areas (see also \code{target}, \code{orig} and \code{to}).
+#' @param npop Population total. If \code{NA}, it is reconstructed from the data. If density values are specified, the population total is approximated using the polygon areas (see also \code{target}, \code{orig} and \code{to}).
 #' @param n Number of sampled dots
 #' @param w Number of population units per dot. It is the population total divided by \code{n}. If specified, \code{n} is calculated accordingly.
 #' @param shp.id Name of the variable of \code{shp} that contains the polygon identifying numbers or names.
@@ -22,6 +22,7 @@
 #' @param ... other arguments passed on to \code{\link{calc_densities}} and \code{\link{approx_areas}}
 #' @export
 #' @example ./examples/sample_dots.R
+#' @references Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 #' @importFrom raster raster extent rasterize couldBeLonLat crop
 sample_dots <- function(shp, vars=NULL, convert2density=FALSE, nrow=NA, ncol=NA, N=250000, npop=NA, n=10000, w=NA, shp.id=NULL, var.name="class", var.labels=vars, target="metric", orig=NA, to=NA, randomize=TRUE, output = c("points", "grid"), ...) {
 	args <- list(...)

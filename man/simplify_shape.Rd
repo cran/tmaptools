@@ -19,7 +19,7 @@ simplify_shape(shp, fact = 0.1, keep.units = FALSE, keep.subunits = FALSE,
 \item{...}{other arguments passed on to the underlying function \code{\link[rmapshaper:ms_simplify]{ms_simplify}} (except for the arguments \code{input}, \code{keep}, \code{keep_shapes} and \code{explode})}
 }
 \value{
-shape in the smae class as \code{shp}
+shape in the same class as \code{shp}
 }
 \description{
 Simplify a shape consisting of polygons or lines. This can be useful for shapes that are too detailed for visualization, especially along natural borders such as coastlines and rivers. The number of coordinates is reduced.
@@ -49,4 +49,7 @@ if (require(tmap)) {
     tmap_arrange(tm5, tm6, tm7)
 }
 }
+}
+\references{
+Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 }
