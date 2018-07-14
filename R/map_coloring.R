@@ -2,22 +2,20 @@
 #'
 #' Color the polygons of a map such that adjacent polygons have different colors
 #'
-#' @param x Either a \code{\link[sp:SpatialPolygonsDataFrame]{SpatialPolygons(DataFrame)}} or an adjacency list. Also \code{sf} objects are supported if they can be coerced to \code{\link[sp:SpatialPolygonsDataFrame]{SpatialPolygons(DataFrame)}}s.
+#' @param x Either a shape (i.e. a \code{\link[sf:sf]{sf}} or \code{\link[sp:SpatialPolygonsDataFrame]{SpatialPolygons(DataFrame)}} object), or an adjacency list.
 #' @param algorithm currently, only "greedy" is implemented.
 #' @param ncols number of colors. By default it is 8 when \code{palette} is undefined. Else, it is set to the length of \code{palette}
 #' @param minimize logical that determines whether \code{algorithm} will search for a minimal number of colors. If \code{FALSE}, the \code{ncols} colors will be picked by a random procedure.
 #' @param palette color palette.
 #' @param contrast vector of two numbers that determine the range that is used for sequential and diverging palettes (applicable when \code{auto.palette.mapping=TRUE}). Both numbers should be between 0 and 1. The first number determines where the palette begins, and the second number where it ends. For sequential palettes, 0 means the brightest color, and 1 the darkest color. For diverging palettes, 0 means the middle color, and 1 both extremes. If only one number is provided, this number is interpreted as the endpoint (with 0 taken as the start).
 #' @return If \code{palette} is defined, a vector of colors is returned, otherwise a vector of color indices.
-#' @importFrom spdep poly2nb
 #' @example ./examples/map_coloring.R
-#' @references Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 #' @export
 map_coloring <- function(x, algorithm="greedy", ncols=NA, minimize=FALSE, palette=NULL, contrast=1) {
-    if (inherits(x, c("sf", "sfc"))) x <- as(x, "Spatial")
-	if (inherits(x, "SpatialPolygons")) {
+    if (inherits(x, "Spatial")) x <- as(x, "sf")
+	if (inherits(x, "sf")) {
 		# get adjacency list
-		adj <- poly2nb(x)
+		adj <- get_neighbours(x)
 	} else if (is.list(x)) {
 		adj <- x
 	} else stop("Unknown x argument")
@@ -72,4 +70,21 @@ map_coloring <- function(x, algorithm="greedy", ncols=NA, minimize=FALSE, palett
 	} else {
 		cols
 	}
+}
+
+#' Get neighbours list from spatial objects
+#'
+#' Get neighbours list from spatial objects. The output is similar to the function \code{poly2nb} of the \code{spdep} package, but uses \code{sf} instead of \code{sp}.
+#'
+#' @param x a shape object, i.e., a \code{\link[sf:sf]{sf}} object or a \code{\link[sp:SpatialPolygonsDataFrame]{SpatialPolygons(DataFrame)}}.
+#' @return A list where the items correspond to the features. Each item is a vector of neighbours.
+#' @export
+get_neighbours <- function(x) {
+    y <- st_intersects(x, x)
+    n <- length(y)
+
+    mapply(function(yi, i) {
+        setdiff(yi, i)
+    }, y, 1L:n, SIMPLIFY = FALSE)
+
 }

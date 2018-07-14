@@ -8,11 +8,11 @@
 set_projection(shp, projection = NA, current.projection = NA,
   overwrite.current.projection = FALSE)
 
-get_projection(shp, as.CRS = FALSE, guess.longlat = FALSE)
+get_projection(shp, guess.longlat = FALSE, output = c("character", "crs",
+  "epsg", "CRS"))
 }
 \arguments{
-\item{shp}{shape object of class \code{\link[sp:Spatial]{Spatial}},
-\code{\link[raster:Raster-class]{Raster}}, or \code{sf} (see details).}
+\item{shp}{shape object, which is an object from a class defined by the \code{\link[sf:sf]{sf}}, \code{\link[sp:sp]{sp}}, or \code{\link[raster:raster-package]{raster}} package.}
 
 \item{projection}{new projection. See \code{\link{get_proj4}} for options. This argument is only used to transform the \code{shp}. Use \code{current.projection} to specify the current projection of \code{shp}.}
 
@@ -20,16 +20,16 @@ get_projection(shp, as.CRS = FALSE, guess.longlat = FALSE)
 
 \item{overwrite.current.projection}{logical that determines whether the current projection is overwritten if it already has a projection that is different.}
 
-\item{as.CRS}{should a CRS object be returned instead of a PROJ.4 character string? Default is \code{FALSE}.}
-
 \item{guess.longlat}{if \code{TRUE}, it checks if the coordinates are within -180/180 and -90/90, and if so, it returns the WGS84 longlat projection (which is \code{get_proj4("longlat")}).}
+
+\item{output}{output format of the projection. One of \code{"character"}, \code{"crs"} (from \code{sf} package), \code{"epsg"} or \code{"CRS"} (from \code{sp}/\code{rgdal} package)}
 }
 \value{
 \code{set_projection} returns a (transformed) shape object with updated projection information. \code{get_projection} returns the \code{PROJ.4} character string of \code{shp}.
 }
 \description{
 The function \code{set_projection} sets the projection of a shape file. It is
-a convenient wrapper of \code{\link[sp:spTransform]{spTransform}} and
+a convenient wrapper of \code{\link[sf:st_transform]{st_transform}} (or \code{\link[lwgeom:st_transform_proj]{st_transform_proj}}, see details) and
 \code{\link[raster:projectRaster]{projectRaster}} with shortcuts for commonly
 used projections. The projection can also be set directly in the plot call
 with \code{\link[tmap:tm_shape]{tm_shape}}. This function is also used to set the current
@@ -37,8 +37,7 @@ projection information if this is missing. The function \code{get_projection}
 is used to get the projection information.
 }
 \details{
+For \code{\link[sf:sf]{sf}} objects, \code{set_projection} first tries to use \code{\link[sf:st_transform]{sf::st_transform}}, which uses the GDAL API. For some projections, most notably Winkel Tripel (\code{"wintri"}), is doesn't work. In these cases, \code{set_projection} will use \code{\link[lwgeom:st_transform_proj]{lwgeom::st_transform_proj}}, which uses the PROJ.4 API.
+
 For raster objects, the projection method is based on the type of data. For numeric layers, the bilinear method is used, and for categorical layers the nearest neighbor. See \code{\link[raster:projectRaster]{projectRaster}} for details.
-}
-\references{
-Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 }

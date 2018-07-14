@@ -4,19 +4,15 @@
 \alias{calc_densities}
 \title{Calculate densities}
 \usage{
-calc_densities(shp, var, target = "metric", orig = NA, to = NA,
-  total.area = NA, suffix = NA, drop = TRUE)
+calc_densities(shp, var, target = "metric", total.area = NULL,
+  suffix = NA, drop = TRUE)
 }
 \arguments{
-\item{shp}{a shape object, i.e., a \code{\link[sp:SpatialPolygonsDataFrame]{SpatialPolygons(DataFrame)}}, or a \code{sf} object that can be coerced as such.}
+\item{shp}{a shape object, i.e., an \code{\link[sf:sf]{sf}} object or a \code{\link[sp:SpatialPolygonsDataFrame]{SpatialPolygons(DataFrame)}}}
 
-\item{var}{name(s) of a quantitative variable name contained in the \code{shp} data}
+\item{var}{name(s) of a qualtity variable name contained in the \code{shp} data}
 
 \item{target}{the target unit, see \code{\link{approx_areas}}. Density values are calculated in \code{var/target^2}.}
-
-\item{orig}{original units, i.e. by which the coordinates are defined, see \code{\link{approx_areas}}.}
-
-\item{to}{multiplier used as follows: \code{orig * to = target}. See \code{\link{approx_areas}}.}
 
 \item{total.area}{total area size of \code{shp} in number of target units (defined by \code{unit}), \code{\link{approx_areas}}.}
 
@@ -28,23 +24,21 @@ calc_densities(shp, var, target = "metric", orig = NA, to = NA,
 Vector or data.frame (depending on whether \code{length(var)==1} with density values. This can be appended directly to the shape file with \code{\link{append_data}} with \code{fixed.order=TRUE}.
 }
 \description{
-Transpose quantitative variables to density variables, which are often needed for choropleths. For example, the colors of a population density map should correspond population density counts rather than absolute population numbers.
+Transpose quantitative variables to densitiy variables, which are often needed for choroplets. For example, the colors of a population density map should correspond population density counts rather than absolute population numbers.
 }
 \examples{
-if (require(tmap)) {
+if (require(tmap) && packageVersion("tmap") >= "2.0") {
     data(NLD_muni)
 
-    NLD_muni_pop_per_km2 <- calc_densities(NLD_muni, target = "km", var = c("pop_men", "pop_women"))
+    NLD_muni_pop_per_km2 <- calc_densities(NLD_muni,
+        target = "km km", var = c("pop_men", "pop_women"))
     NLD_muni <- append_data(NLD_muni, NLD_muni_pop_per_km2, fixed=TRUE)
 
     tm_shape(NLD_muni) +
-    	tm_polygons(c("pop_men_sq_km", "pop_women_sq_km"),
+    	tm_polygons(c("pop_women_km^2", "pop_women_km^2"),
             title=expression("Population per " * km^2), style="quantile") +
     tm_facets(free.scales = FALSE) +
     tm_layout(panel.show = TRUE, panel.labels=c("Men", "Women"))
 }
-}
-\references{
-Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 }
 \keyword{densities}

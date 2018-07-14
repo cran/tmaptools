@@ -4,12 +4,13 @@
 \alias{get_proj4}
 \title{Get a PROJ.4 character string}
 \usage{
-get_proj4(x, as.CRS = FALSE)
+get_proj4(x, output = c("crs", "character", "epsg", "CRS"))
 }
 \arguments{
 \item{x}{a projection. One of:
 \enumerate{
    \item{a \code{PROJ.4} character string}
+   \item{a \code{\link[sf:st_crs]{crs}} object}
    \item{a \code{\link[sp:CRS]{CRS}} object}
    \item{an EPSG code}
    \item{one the following shortcuts codes:
@@ -32,16 +33,13 @@ get_proj4(x, as.CRS = FALSE)
    }}
 }}
 
-\item{as.CRS}{should a CRS object be returned instead of a PROJ.4 character string? Default is \code{FALSE}.}
+\item{output}{the output format of the projection, one of \code{"character"}, \code{"crs"},\code{"epsg"}, or \code{"CRS"}}
 }
 \value{
-validated PROJ.4 character string, or, if \code{as.CRS=TRUE} a \code{\link[sp:CRS]{CRS}} object.
+see \code{output}
 }
 \description{
 Get full PROJ.4 string from an existing PROJ.4 string, a shortcut, or a \code{\link[sp:CRS]{CRS}} object.
-}
-\references{
-Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 }
 \seealso{
 \url{http://en.wikipedia.org/wiki/List_of_map_projections} for a overview of projections. \url{http://trac.osgeo.org/proj/} for the \code{PROJ.4} project home page. An extensive list of \code{PROJ.4} codes can be created with rgdal's \code{\link[rgdal:make_EPSG]{make_EPSG}}.

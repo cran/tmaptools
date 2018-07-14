@@ -7,9 +7,9 @@
 crop_shape(x, y, polygon = FALSE, ...)
 }
 \arguments{
-\item{x}{shape object, i.e. an object from class \code{\link[sp:Spatial]{Spatial-class}}, \code{\link[raster:Raster-class]{Raster}}, or \code{sf}.}
+\item{x}{shape object, i.e. an object from class \code{\link[sp:Spatial]{Spatial-class}}, \code{\link[raster:Raster-class]{Raster}}, or \code{\link[sf:sf]{sf}}.}
 
-\item{y}{bounding box (2 by 2 matrix), an \code{\link[raster:extent]{extent}}, or a shape object from which the bounding box is extracted (unless \code{polygon} is \code{TRUE} and \code{x} is a \code{SpatialPolygons} object).}
+\item{y}{bounding box, an \code{\link[raster:extent]{extent}}, or a shape object from which the bounding box is extracted (unless \code{polygon} is \code{TRUE} and \code{x} is a \code{SpatialPolygons} object).}
 
 \item{polygon}{should \code{x} be cropped by the polygon defined by \code{y}? If \code{FALSE} (default), \code{x} is cropped by the bounding box of \code{x}. Polygon cropping only works when \code{x} is a spatial object and \code{y} is a \code{SpatialPolygons} object.}
 
@@ -19,29 +19,26 @@ crop_shape(x, y, polygon = FALSE, ...)
 cropped shape, in the same class as \code{x}
 }
 \description{
-Crop a shape object (from class \code{\link[sp:Spatial]{Spatial}}, \code{\link[raster:Raster-class]{Raster}}, or \code{sf}). A shape file \code{x} is cropped, either by the bounding box of another shape \code{y}, or by \code{y} itself if it is a SpatialPolygons object and \code{polygon = TRUE}.
+Crop a shape object (from class \code{\link[sp:Spatial]{Spatial}}, \code{\link[raster:Raster-class]{Raster}}, or \code{\link[sf:sf]{sf}}). A shape file \code{x} is cropped, either by the bounding box of another shape \code{y}, or by \code{y} itself if it is a SpatialPolygons object and \code{polygon = TRUE}.
 }
 \details{
 This function is similar to \code{\link[raster:crop]{crop}} from the \code{raster} package. The main difference is that \code{crop_shape} also allows to crop using a polygon instead of a rectangle.
 }
 \examples{
-if (require(tmap)) {
-    data(Europe, land, metro)
+if (require(tmap) && packageVersion("tmap") >= "2.0") {
+    data(World, NLD_muni, land, metro)
 
-    land_europe <- crop_shape(land, Europe)
+    land_NLD <- crop_shape(land, NLD_muni)
 
-    qtm(land_europe, raster="trees", style="natural")
+    qtm(land_NLD, raster="trees", style="natural")
 
-    metro_europe <- crop_shape(metro, Europe, polygon = TRUE)
+    metro_Europe <- crop_shape(metro, World[World$continent == "Europe", ], polygon = TRUE)
 
-    qtm(Europe) +
-    tm_shape(metro_europe) +
+    qtm(World) +
+    tm_shape(metro_Europe) +
     	tm_bubbles("pop2010", col="red", title.size="European cities") +
     	tm_legend(frame=TRUE)
 }
-}
-\references{
-Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 }
 \seealso{
 \code{\link{bb}}

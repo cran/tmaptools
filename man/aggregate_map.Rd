@@ -15,7 +15,7 @@ aggregate_map(shp, by = NULL, fact = NULL, agg.fun = NULL,
  \item{\code{\link[sp:SpatialGridDataFrame]{SpatialGrid(DataFrame)}}}
  \item{\code{\link[sp:SpatialPixelsDataFrame]{SpatialPixels(DataFrame)}}}
  \item{\code{\link[raster:Raster-class]{RasterLayer, RasterStack, or RasterBrick}}}
- \item{\code{sf} object if it can be coerced to a \code{Spatial} object}
+ \item{\code{\link[sf:sf]{sf}} object if it can be coerced to an \code{\link[sp:sp]{sp}} object}
 }}
 
 \item{by}{variable by which polygons or lines are merged. Does not apply to raster objects.}
@@ -40,17 +40,19 @@ These predefined functions can be used: \code{"mean"}, \code{"modal"}, \code{"fi
 A shape object, in the same format as \code{shp}
 }
 \description{
-Aggregate spatial polygons, spatial lines or raster objects. For spatial polygons and lines, the units will be merged with the \code{by} variable. For rasters, the \code{fact} parameter determined how many rasters cells are aggregated both horizontally and vertically. Per data variable, an aggregation formula can be specified, by default mean for numeric and modal for categorical variables.
+Aggregate spatial polygons, spatial lines or raster objects. For spatial polygons and lines, the units will be merged with the \code{by} variable. For rasters, the \code{fact} parameter determined how many rasters cells are aggregated both horizontally and vertically. Per data variable, an aggregation formula can be specified, by default mean for numeric and modal for categorical varaibles. Note that this function supports \code{sf} objects, but still uses sp-based methods (see details).
 }
 \details{
 This function is similar to \code{\link[raster:aggregate]{aggregate}} from the \code{raster} package. However, the aggregation can be specified in more detail: weights can be used (e.g. polygon area sizes). Also, an aggregation function can be specified per variable or raster layer. It is also possible to specify a general function for numeric data and a function for categorical data.
 
 By default, the data is not aggregated. In this case, this function is similar to \code{unionSpatialPolygons} from the \code{maptools} package. The only difference is way the aggregate-by variable is specified. When using \code{unionSpatialPolygons}, the values have to be assigned to \code{IDs} whereas when using \code{aggregate_map} the data variable name can be assigned to \code{by}.
 
-The underlying functions of \code{aggregate_map} for \code{Spatial} objects are \code{\link[rgeos:gUnaryUnion]{gUnaryUnion}}, \code{\link[rgeos:gUnionCascaded]{gUnionCascaded}}, and \code{\link[rgeos:gLineMerge]{gLineMerge}}. For \code{Raster} objects, the \code{\link[raster:aggregate]{aggregate}} is used.
+The underlying functions of \code{aggregate_map} for \code{\link[sp:sp]{sp}} objects are \code{\link[rgeos:gUnaryUnion]{gUnaryUnion}}, \code{\link[rgeos:gUnionCascaded]{gUnionCascaded}}, and \code{\link[rgeos:gLineMerge]{gLineMerge}}. For \code{Raster} objects, the \code{\link[raster:aggregate]{aggregate}} is used.
+
+This function supports \code{\link[sf:sf]{sf}} objects, but still uses sp-based methods, from the packages sp, rgeos, and/or rgdal. Alternatively, the \code{\link[sf:tidyverse]{tidyverse}} methods \code{group_by} and \code{summarize} can be used.
 }
 \examples{
-if (require(tmap)) {
+if (require(tmap) && packageVersion("tmap") >= "2.0") {
     data(land)
 
     # original map
@@ -60,6 +62,7 @@ if (require(tmap)) {
     # map decreased by factor 4 for each dimension
     land4 <- aggregate_map(land, fact=4, agg.fun="modal")
     qtm(land4, raster="cover_cls")
+    }
 
     # map decreased by factor 8, where the variable trees is
     # aggregated with mean, min, and max
@@ -70,7 +73,6 @@ if (require(tmap)) {
     	tm_raster(c("trees.1", "trees.2", "trees.3"), title="Trees (\%)") +
     	tm_facets(free.scales=FALSE) +
     	tm_layout(panel.labels = c("mean", "min", "max"))
-    }
 
     data(NLD_muni, NLD_prov)
 
@@ -80,16 +82,16 @@ if (require(tmap)) {
         origin_non_west="mean", name="modal"), weights = "population")
 
     # see original provinces data
-    NLD_prov@data[, c("name", "population", "origin_native", "origin_west", "origin_non_west")]
+    as.data.frame(NLD_prov)[, c("name", "population", "origin_native",
+                                "origin_west", "origin_non_west")]
 
     # see aggregates data (the last column corresponds to the most populated municipalities)
-    NLD_prov2@data
+    sf::st_set_geometry(NLD_prov2, NULL)
 
     # largest municipalities in area per province
-    aggregate_map(NLD_muni, by="province",
-        agg.fun = list(name="modal"), weights = "AREA")@data
+    NLD_largest_muni <- aggregate_map(NLD_muni, by="province",
+        agg.fun = list(name="modal"), weights = "AREA")
+
+    sf::st_set_geometry(NLD_largest_muni, NULL)
 }
-}
-\references{
-Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 }

@@ -22,7 +22,7 @@ over_coverage()
  \item{\code{\link[sp:SpatialLinesDataFrame]{SpatialLines(DataFrame)}}}
  \item{\code{\link[sp:SpatialGridDataFrame]{SpatialGrid(DataFrame)}}}
  \item{\code{\link[sp:SpatialPixelsDataFrame]{SpatialPixels(DataFrame)}}}
- \item{\code{sf} object that can be coerced as one above}
+ \item{\code{\link[sf:sf]{sf}} object that can be coerced as one above}
 }}
 
 \item{data}{data.frame}
@@ -41,12 +41,15 @@ over_coverage()
 Shape object with appended data. Tip: run \code{append_data} without assigning the result to check the coverage.
 }
 \description{
-Data, in the format of a data.frame, is appended to a shape object. This is either done by a left join where keys are specified for both shape and data, or by fixed order. Under coverage (shape items that do not correspond to data records), over coverage (data records that do not correspond to shape items respectively) as well as the existence of duplicated key values are automatically checked and reported via console messages. With \code{under_coverage} and \code{over_coverage} the under and over coverage key values from the last \code{append_data} call can be retrieved. Tip: run \code{append_data} without assigning the result to check the coverage.
+Data, in the format of a data.frame, is appended to a shape object. This is either done by a left join where keys are specified for both shape and data, or by fixed order. Under coverage (shape items that do not correspond to data records), over coverage (data records that do not correspond to shape items respectively) as well as the existence of duplicated key values are automatically checked and reported via console messages. With \code{under_coverage} and \code{over_coverage} the under and over coverage key values from the last \code{append_data} call can be retrieved. Tip: run \code{append_data} without assigning the result to check the coverage. Note that this function supports \code{sf} objects, but still uses sp-based methods (see details).
+}
+\details{
+This function supports \code{sf} objects, but still uses sp-based methods, from the packages sp, rgeos, and/or rgdal. Alternatively, the \code{\link[sf:tidyverse]{tidyverse}} method \code{left_join} can be used.
 }
 \examples{
 \dontrun{
 if (require(tmap)) {
-    data(Europe)
+    data(World)
 
     f <- tempfile()
     download.file("http://kejser.org/wp-content/uploads/2014/06/Country.csv", destfile = f)
@@ -56,22 +59,22 @@ if (require(tmap)) {
     domain_codes <- subset(domain_codes, select = c("Alpha3Code", "TopLevelDomain"))
     domain_codes$Alpha3Code <- toupper(domain_codes$Alpha3Code)
 
-    Europe <- append_data(Europe, domain_codes, key.shp = "iso_a3", key.data = "Alpha3Code",
-    					  ignore.na = TRUE)
+    World <- append_data(World, domain_codes, key.shp = "iso_a3", key.data = "Alpha3Code",
+    					 ignore.na = TRUE)
 
     # codes in the data, but not in Europe:
     oc <- over_coverage()
     oc$value
 
-    # European countries without appended data:
+    # Countries without appended data:
     uc <- under_coverage()
-    qtm(Europe[uc$id,], text="name")
+
+    current_mode <- tmap_mode("view")
+    qtm(World[uc$id,], text="name")
 
     # plot the result
-    qtm(Europe, text="TopLevelDomain")
+    qtm(World, text="TopLevelDomain")
+    tmap_mode(current_mode)
 }
 }
-}
-\references{
-Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 }

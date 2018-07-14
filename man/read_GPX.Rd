@@ -5,20 +5,23 @@
 \title{Read GPX file}
 \usage{
 read_GPX(file, layers = c("waypoints", "tracks", "routes", "track_points",
-  "route_points"), as.sf = FALSE)
+  "route_points"), as.sf = TRUE)
 }
 \arguments{
 \item{file}{a GPX filename (including directory)}
 
-\item{layers}{vector of GPX layers. Possible options are \code{"waypoints"}, \code{"tracks"}, \code{"routes"}, \code{"track_points"}, \code{"route_points"}. By default, all those layers are read.}
+\item{layers}{vector of GPX layers. Possible options are \code{"waypoints"}, \code{"tracks"}, \code{"routes"}, \code{"track_points"}, \code{"route_points"}. By dedault, all those layers are read.}
 
-\item{as.sf}{should \code{sf} objects be returned?}
+\item{as.sf}{should \code{\link[sf:sf]{sf}} objects be returned? By default \code{TRUE}}
 }
 \value{
-for each defined layer, a shape is returned (only if the layer has any features). If only one layer is defined, the corresponding shape is returned. If more than one layer is defined, a list of shape objects, one for each layer, is returned.
+for each defiend layer, a shape is returned (only if the layer has any features). If only one layer is defined, the corresponding shape is returned. If more than one layer is defined, a list of shape objects, one for each layer, is returned.
 }
 \description{
 Read a GPX file. By default, it reads all possible GPX layers, and only returns shapes for layers that have any features.
+}
+\details{
+Note that this function returns \code{\link[sf:sf]{sf}} objects, but still uses methods from sp and rgdal internally.
 }
 \examples{
 \dontrun{
@@ -51,7 +54,4 @@ if (require(tmap)) {
 	tm_view(basemaps = "Esri.WorldTopoMap")
 }
 }
-}
-\references{
-Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 }

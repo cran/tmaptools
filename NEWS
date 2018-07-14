@@ -1,8 +1,8 @@
-version 1.2-4
-- added references to JSS paper (including citation)
-
-version 1.2-3
-- fixed bug in smooth_map
+version 2.0
+- tmaptools migrated from sp to sf, all functions support sf, but some still rely on sp
+- bb now returns a vector instead of a matrix, similar to sf::st_bbox
+- palette_explorer expanded with viridis palettes
+- read_osm doens't support vector OSM data anymore, since the osmdata package is a better alternative
 
 version 1.2-2
 - improved smooth_map

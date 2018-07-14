@@ -4,43 +4,33 @@
 \alias{approx_areas}
 \title{Approximate area sizes of the shapes}
 \usage{
-approx_areas(shp, target = "metric", orig = NA, to = NA,
-  total.area = NA, show.warnings = TRUE)
+approx_areas(shp, target = "metric", total.area = NULL)
 }
 \arguments{
-\item{shp}{shape object, i.e., a \code{\link[sp:SpatialPolygonsDataFrame]{SpatialPolygons(DataFrame)}}, or an \code{sf} object that can be coerced as such.}
+\item{shp}{shape object, i.e., an \code{\link[sf:sf]{sf}} or \code{\link[sp:sp]{sp}} object.}
 
 \item{target}{target unit, one of
 \describe{
-    \item{\code{"abs"}:}{Absolute numbers based on polygon coordinates.}
     \item{\code{"prop"}:}{Proportional numbers. In other words, the sum of the area sizes equals one.}
     \item{\code{"norm"}:}{Normalized numbers. All area sizes are normalized to the largest area, of which the area size equals one.}
     \item{\code{"metric"} (default):}{Output area sizes will be either \code{"km"} (kilometer) or \code{"m"} (meter) depending on the map scale}
     \item{\code{"imperial"}:}{Output area sizes will be either \code{"mi"} (miles) or \code{"ft"} (feet) depending on the map scale}
-    \item{other:}{Predefined values are "km", "m", "mi", and "ft". Other values can be specified as well, in which case \code{to} is required).}}
+    \item{other:}{Predefined values are "km^2", "m^2", "mi^2", and "ft^2". Other values can be specified as well, in which case \code{to} is required).}}
 These units are the output units. See \code{orig} for the coordinate units used by the shape \code{shp}.}
 
-\item{orig}{original unit, i.e. by which the coordinates are defined. By default, the value is taken from the crs projection string defined in \code{shp}. Not needed for non-projected shapes, since their areas are determined in another way (see details).}
-
-\item{to}{multiplier used as follows: \code{orig * to = target}. Only needed when \code{orig} or \code{target} is unknown. For instance, if \code{target} is set to \code{"hm"} (hectometer), and \code{orig} is \code{"m"}, then \code{to} should be 100, meaning 1 hectometer equals 100 meters.}
-
 \item{total.area}{total area size of \code{shp} in number of target units (defined by \code{target}). Useful if the total area of the \code{shp} differs from a reference total area value. For \code{"metric"} and \code{"imperial"} units, please provide the total area in squared kilometers respectively miles.}
-
-\item{show.warnings}{should warnings be shown?}
 }
 \value{
-Numeric vector of area sizes. An attribute called unit is added to specify the used target units, which is especially useful when units were set to metric or imperial.
+Numeric vector of area sizes (class \code{\link[units:units]{units}}).
 }
 \description{
-Approximate the area sizes of the polygons in real-world area units (such as sq km or sq mi), absolute numbers based on the polygon coordinates, proportional numbers, or normalized numbers.
+Approximate the area sizes of the polygons in real-world area units (such as sq km or sq mi), proportional numbers, or normalized numbers. Also, the areas can be calibrated to a prespecified area total. This function is a convenient wrapper around \code{\link[sf:st_area]{st_area}}.
 }
 \details{
-Note that this method is an approximation, since it depends on the used projection and the level of detail of the shape object. Projections with equal-area property are highly recommended. See \url{https://en.wikipedia.org/wiki/List_of_map_projections} for equal area world map projections.
-
-For projected shapes, \code{\link[rgeos:gArea]{gArea}} is used, and for unprojected shapes, \code{\link[geosphere:areaPolygon]{areaPolygon}}.
+Note that the method of determining areas is an approximation, since it depends on the used projection and the level of detail of the shape object. Projections with equal-area property are highly recommended. See \url{https://en.wikipedia.org/wiki/List_of_map_projections} for equal area world map projections.
 }
 \examples{
-if (require(tmap)) {
+if (require(tmap) && packageVersion("tmap") >= "2.0") {
     data(NLD_muni)
 
     NLD_muni$area <- approx_areas(NLD_muni, total.area = 33893)
@@ -54,8 +44,7 @@ if (require(tmap)) {
         list(min_area=min(x),
              max_area=max(x),
              mean_area=mean(x),
-             sum_area=sum(x),
-             units=paste0(attr(x, "unit")))
+             sum_area=sum(x))
     }
 
     # area of the polygons
@@ -68,15 +57,12 @@ if (require(tmap)) {
     approx_areas(NLD_muni, target = "prop") \%>\% summary_areas()
 
     # area in squared miles
-    approx_areas(NLD_muni, target = "mi") \%>\% summary_areas()
+    approx_areas(NLD_muni, target = "mi mi") \%>\% summary_areas()
 
     # area of the polygons when unprojected
     approx_areas(NLD_muni \%>\% set_projection(projection="longlat")) \%>\% summary_areas()
 }
 }
-\references{
-Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
-}
 \seealso{
-\code{\link{projection_units}} and \code{\link{approx_distances}}
+\code{\link{approx_distances}}
 }

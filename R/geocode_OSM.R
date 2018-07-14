@@ -7,25 +7,24 @@
 #' @param return.first.only Only return the first result
 #' @param details provide output details, other than the point coordinates and bounding box
 #' @param as.data.frame Return the output as a \code{data.frame}. If \code{FALSE}, a list is returned with at least two items: \code{"coords"}, a vector containing the coordinates, and \code{"bbox"}, the corresponding bounding box. By default false, unless \code{q} contains multiple queries
-#' @param as.SPDF Return the output as \code{\link[sp:SpatialPointsDataFrame]{SpatialPointsDataFrame}}. If \code{TRUE}, \code{return.first.only} will be set to \code{TRUE}.
+#' @param as.sf Return the output as \code{\link[sf:sf]{sf}} object. If \code{TRUE}, \code{return.first.only} will be set to \code{TRUE}.
 #' @param server OpenStreetMap Nominatim server name. Could also be a local OSM Nominatim server.
 #' @return If \code{as.SPDF} then a \code{\link[sp:SpatialPointsDataFrame]{SpatialPointsDataFrame}} is returned. Else, if \code{as.data.frame}, then a \code{data.frame} is returned, else a list.
 #' @export
 #' @importFrom XML xmlChildren xmlRoot xmlAttrs xmlTreeParse xmlValue
 #' @example ./examples/geocode_OSM.R
 #' @seealso \code{\link{rev_geocode_OSM}}, \code{\link{bb}}
-#' @references Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
-geocode_OSM <- function(q, projection=NULL, return.first.only=TRUE, details=FALSE, as.data.frame=NA, as.SPDF=FALSE, server="http://nominatim.openstreetmap.org") {
+geocode_OSM <- function(q, projection=NULL, return.first.only=TRUE, details=FALSE, as.data.frame=NA, as.sf=FALSE, server="http://nominatim.openstreetmap.org") {
 	n <- length(q)
 	q2 <- gsub(" ", "+", enc2utf8(q), fixed = TRUE)
 	addr <- paste0(server, "/search?q=", q2, "&format=xml&polygon=0&addressdetails=0")
 
 	project <- !missing(projection)
-	if (project) projection <- get_proj4(projection, as.CRS = TRUE)
+	if (project) projection <- get_proj4(projection, output = "crs")
 
 
 	if (is.na(as.data.frame)) as.data.frame <- (n>1)
-	if (as.SPDF) {
+	if (as.sf) {
 		as.data.frame <- TRUE
 		return.first.only <- TRUE
 	}
@@ -73,10 +72,11 @@ geocode_OSM <- function(q, projection=NULL, return.first.only=TRUE, details=FALS
 				search_result_bb <- b[c(2,4,1,3)]
 				names(search_result_bb) <- c("y_min", "y_max", "x_min", "x_max")
 
+                p <- st_sf(st_sfc(st_point(search_result_loc[2:1]), crs = .crs_longlat))
 
-				p <- SpatialPoints(matrix(search_result_loc[2:1], nrow=1), proj4string=.CRS_longlat)
 				p <- set_projection(p, projection=projection)
-				coords <- as.vector(attr(p, "coords"))
+
+				coords <- as.vector(st_coordinates(p))
 				names(coords) <- c("x", "y")
 
 				search_result_loc <- as.list(coords)
@@ -104,17 +104,20 @@ geocode_OSM <- function(q, projection=NULL, return.first.only=TRUE, details=FALS
 	if (as.data.frame) {
 		df <- do.call(rbind, output3)
 
-		if (as.SPDF) {
+		if (as.sf) {
 			if (!project) {
-				spdf <- SpatialPointsDataFrame(df[, c("lon", "lat")], proj4string=.CRS_longlat,
-											   data = df,
-											   match.ID = FALSE)
+
+			    df$x <- df$lon
+			    df$y <- df$lat
+
+			    res <- st_as_sf(df, coords = c("x","y"), crs=.crs_longlat)
 			} else {
-				spdf <- SpatialPointsDataFrame(df[, c("x", "y")], proj4string=projection,
-											   data = df,
-											   match.ID = FALSE)
+			    df$x2 <- df$x
+			    df$y2 <- df$y
+
+			    res <- st_as_sf(df, coords = c("x2","y2"), crs=.crs_longlat)
 			}
-			spdf
+			res
 		} else {
 			df
 		}
@@ -138,14 +141,14 @@ geocode_OSM <- function(q, projection=NULL, return.first.only=TRUE, details=FALS
 #' @param server OpenStreetMap Nominatim server name. Could also be a local OSM Nominatim server.
 #' @export
 #' @importFrom XML xmlChildren xmlRoot xmlAttrs xmlTreeParse xmlValue
-#' @return A data frame with all attributes that are contained in the search result
+#' @return A data frmame with all atributes that are contained in the search result
 #' @example ./examples/rev_geocode_OSM.R
 #' @seealso \code{\link{geocode_OSM}}
 rev_geocode_OSM <- function(x, y=NULL, zoom=NULL, projection=NULL, as.data.frame=NA, server="http://nominatim.openstreetmap.org") {
 
 	project <- !missing(projection)
 
-	if (project) projection <- get_proj4(projection, as.CRS = TRUE)
+	if (project) projection <- get_proj4(projection, output = "CRS")
 
 	if (inherits(x, "SpatialPoints")) {
 
@@ -177,7 +180,7 @@ rev_geocode_OSM <- function(x, y=NULL, zoom=NULL, projection=NULL, as.data.frame
 			lon <- x
 			lat <- y
 		} else {
-			projection <- get_proj4(projection, as.CRS = TRUE)
+			projection <- get_proj4(projection, output = "CRS")
 			single_point <- SpatialPoints(matrix(c(x,y), ncol=2), proj4string=projection)
 			coords <- attr(set_projection(single_point, projection = .CRS_longlat), "coords")
 			lon <- coords[,1]

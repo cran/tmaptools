@@ -4,29 +4,22 @@
 \alias{approx_distances}
 \title{Approximate distances}
 \usage{
-approx_distances(x, y = NULL, projection = NULL, target = "metric",
-  orig = NA, to = NA, show.warnings = TRUE)
+approx_distances(x, y = NULL, projection = NULL, target = NULL)
 }
 \arguments{
-\item{x}{object that can be coerced to a bounding box with \code{\link{bb}}, or a pair of coordinates (vector of two). In the former case, the distance across the horizontal and vertical centerlines of the bounding box are approximated. In the latter case, \code{y} is also required; the distance between points \code{x} and \code{y} is approximated.}
+\item{x}{object that can be coerced to a bounding box with \code{\link{bb}}, or a pair of coordintes (vector of two). In the former case, the distance across the horizontal and vertical centerlines of the bounding box are approximated. In the latter case, \code{y} is also required; the distance between points \code{x} amd \code{y} is approximated.}
 
 \item{y}{a pair of coordintes, vector of two. Only required when \code{x} is also a pair of coordintes.}
 
 \item{projection}{projection code, needed in case \code{x} is a bounding box or when \code{x} and \code{y} are pairs of coordinates. See \code{\link{get_proj4}}}
 
 \item{target}{target unit, one of:  \code{"m"}, \code{"km"}, \code{"mi"}, and \code{"ft"}.}
-
-\item{orig}{original unit, i.e. by which \code{x} is defined. Only needed if this information is missing from \code{x} and \code{x} is projected. Options:  \code{"m"}, \code{"km"}, \code{"mi"}, and \code{"ft"}.}
-
-\item{to}{multiplier used as follows: \code{orig * to = target}. Only needed when \code{orig} or \code{target} is unknown. For instance, if \code{target} is set to \code{"hm"} (hectometer), and \code{orig} is \code{"m"}, then \code{to} should be 100, meaning 1 hectometer equals 100 meters.}
-
-\item{show.warnings}{should warnings be shown?}
 }
 \value{
-If \code{y} is specified, a list of two: unit and dist. Else, a list of three: unit, hdist (horizontal distance) and vdist (vertical distance).
+If \code{y} is specifyed, a list of two: unit and dist. Else, a list of three: unit, hdist (horizontal distance) and vdist (vertical distance).
 }
 \description{
-Approximate distances between two points or across the horizontal and vertical center lines of a bounding box.
+Approximate distances between two points or across the horizontal and vertical centerlines of a bounding box.
 }
 \examples{
 \dontrun{
@@ -39,10 +32,10 @@ if (require(tmap)) {
     # Distance between Maastricht and Groningen
     p_maastricht <- geocode_OSM("Maastricht")$coords
     p_groningen <- geocode_OSM("Groningen")$coords
-    approx_distances(p_maastricht, p_groningen)
+    approx_distances(p_maastricht, p_groningen, projection = "longlat", target = "km")
 
     # Check distances in several projections
-    sapply(c("wintri", "utm31", "laea_Eur", "rd", "longlat"), function(projection) {
+    sapply(c("eck4", "utm31", "laea_Eur", "rd", "longlat"), function(projection) {
         p_maastricht <- geocode_OSM("Maastricht", projection = projection)$coords
         p_groningen <- geocode_OSM("Groningen", projection = projection)$coords
         approx_distances(p_maastricht, p_groningen, projection = projection)
@@ -50,9 +43,6 @@ if (require(tmap)) {
 }
 }
 }
-\references{
-Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
-}
 \seealso{
-\code{\link{projection_units}} and \code{\link{approx_areas}}
+\code{\link{approx_areas}}
 }

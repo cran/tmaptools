@@ -8,7 +8,7 @@ map_coloring(x, algorithm = "greedy", ncols = NA, minimize = FALSE,
   palette = NULL, contrast = 1)
 }
 \arguments{
-\item{x}{Either a \code{\link[sp:SpatialPolygonsDataFrame]{SpatialPolygons(DataFrame)}} or an adjacency list. Also \code{sf} objects are supported if they can be coerced to \code{\link[sp:SpatialPolygonsDataFrame]{SpatialPolygons(DataFrame)}}s.}
+\item{x}{Either a shape (i.e. a \code{\link[sf:sf]{sf}} or \code{\link[sp:SpatialPolygonsDataFrame]{SpatialPolygons(DataFrame)}} object), or an adjacency list.}
 
 \item{algorithm}{currently, only "greedy" is implemented.}
 
@@ -27,7 +27,7 @@ If \code{palette} is defined, a vector of colors is returned, otherwise a vector
 Color the polygons of a map such that adjacent polygons have different colors
 }
 \examples{
-if (require(tmap)) {
+if (require(tmap) && packageVersion("tmap") >= "2.0") {
     data(World, metro)
 
     World$color <- map_coloring(World, palette="Pastel2")
@@ -43,10 +43,7 @@ if (require(tmap)) {
     tm_shape(NLD_prov) +
     	tm_borders(lwd=2) +
     	tm_text("name", shadow=TRUE) +
-    tm_format_NLD(title="Dutch provinces and\\nmunicipalities", bg.color="white")
+    tm_format("NLD", title="Dutch provinces and\\nmunicipalities", bg.color="white")
 }
 
-}
-\references{
-Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 }

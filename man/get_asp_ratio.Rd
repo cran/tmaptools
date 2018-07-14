@@ -8,9 +8,9 @@ get_asp_ratio(x, is.projected = NA, width = 700, height = 700,
   res = 100)
 }
 \arguments{
-\item{x}{shape object (either \code{\link[sp:Spatial]{Spatial}}, a \code{\link[raster:Raster-class]{Raster}}, or an \code{sf}), a bounding box (that can be coerced by \code{\link{bb}}), or a \code{\link[tmap:tmap-element]{tmap}} object.}
+\item{x}{shape object (either \code{\link[sp:Spatial]{Spatial}}, a \code{\link[raster:Raster-class]{Raster}}, or an \code{\link[sf:sf]{sf}}), a bounding box (that can be coerced by \code{\link{bb}}), or a \code{\link[tmap:tmap-element]{tmap}} object.}
 
-\item{is.projected}{Logical that determined whether the coordinates of \code{x} are projected (\code{TRUE}) or longitude latitude coordinates (\code{FALSE}). By default, it is determined by the coordinates of \code{x}.}
+\item{is.projected}{Logical that determined wether the coordinates of \code{x} are projected (\code{TRUE}) or longitude latitude coordinates (\code{FALSE}). By deafult, it is determined by the coordinates of \code{x}.}
 
 \item{width}{See details; only applicable if \code{x} is a \code{\link[tmap:tmap-element]{tmap}} object.}
 
@@ -28,7 +28,7 @@ Get the aspect ratio of a shape object, a \code{\link[tmap:tmap-element]{tmap}} 
 The arguments \code{width}, \code{height}, and \code{res} are passed on to \code{\link[grDevices:png]{png}}. If \code{x} is a tmap object, a temporarily png image is created to calculate the aspect ratio of a tmap object. The default size of this image is 700 by 700 pixels at 100 dpi.
 }
 \examples{
-if (require(tmap)) {
+if (require(tmap) && packageVersion("tmap") >= "2.0") {
     data(World)
 
     get_asp_ratio(World)
@@ -40,7 +40,4 @@ if (require(tmap)) {
 
     get_asp_ratio("Germany") #note: bb("Germany") uses geocode_OSM("Germany")
 }
-}
-\references{
-Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 }

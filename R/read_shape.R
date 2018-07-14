@@ -8,14 +8,13 @@
 #'
 #' @param file a shape file name (including directory)
 #' @param current.projection the current projection of the shape object, if it is missing in the shape file. See \code{\link{get_proj4}} for options. Use \code{\link{set_projection}} to reproject the shape object.
-#' @param as.sf should the shape be returned as an \code{sf} object?
+#' @param as.sf should the shape be returned as an \code{\link[sf:sf]{sf}} object?
 #' @param ... other parameters, such as \code{stringsAsFactors}, are passed on to \code{\link[rgdal:readOGR]{readOGR}}
-#' @return shape object from class \code{\link[sp:Spatial]{Spatial}} or \code{sf} if \code{as.sf = TRUE}
+#' @return shape object from class \code{\link[sp:Spatial]{Spatial}} or \code{\link[sf:sf]{sf}} if \code{as.sf = TRUE}
 #' @importFrom rgdal readOGR
-#' @references Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 #' @import sp
 #' @export
-read_shape <- function(file, current.projection=NULL, as.sf=FALSE, ...){
+read_shape <- function(file, current.projection=NULL, as.sf=TRUE, ...){
 
 	# determine region ID
 	if (file.exists(file)) {

@@ -5,10 +5,10 @@
 \title{Bin spatial points to a raster}
 \usage{
 points_to_raster(shp, nrow = NA, ncol = NA, N = 250000, by = NULL,
-  to.Raster = FALSE)
+  to.Raster = NULL)
 }
 \arguments{
-\item{shp}{shape object. a \code{\link[sp:SpatialPointsDataFrame]{SpatialPoints(DataFrame)}}, a \code{\link[sp:SpatialGridDataFrame]{SpatialGrid(DataFrame)}}, or an \code{sf} object that can be coerced as such.}
+\item{shp}{shape object. a \code{\link[sp:SpatialPointsDataFrame]{SpatialPoints(DataFrame)}}, a \code{\link[sp:SpatialGridDataFrame]{SpatialGrid(DataFrame)}}, or an \code{\link[sf:sf]{sf}} object that can be coerced as such.}
 
 \item{nrow}{number of raster rows. If \code{NA}, it is automatically determined by \code{N} and the aspect ratio of \code{shp}.}
 
@@ -18,16 +18,18 @@ points_to_raster(shp, nrow = NA, ncol = NA, N = 250000, by = NULL,
 
 \item{by}{name of a data variable which should be a factor. The points are split and counted according to the levels of this factor.}
 
-\item{to.Raster}{logical; should the output be a \code{\link[raster:Raster-class]{Raster}} object (\code{TRUE}), or a \code{\link[sp:SpatialGridDataFrame]{SpatialGridDataFrame}} (\code{FALSE}). If \code{TRUE}, a \code{RasterBrick} is returned when \code{by} is specified, and a \code{RasterLayer} when \code{by} is unspecified.}
+\item{to.Raster}{not used anymore, since the output is always a \code{\link[raster:Raster-class]{raster}} as of version 2.0}
 }
 \value{
-A \code{\link[sp:SpatialGridDataFrame]{SpatialGridDataFrame}}, or a \code{\link[raster:Raster-class]{Raster}} object when (\code{to.Raster=TRUE})
+a \code{RasterBrick} is returned when \code{by} is specified, and a \code{RasterLayer} when \code{by} is unspecified.
 }
 \description{
-Bin spatial points to a raster. For each raster cell, the number of points are counted. Optionally, a factor variable can be specified by which the points are counts are split.
+Bin spatial points to a raster. For each raster cell, the number of points are counted. Optionally, a factor variable can be specified by which the points are counts are split. Note that this function supports \code{sf} objects, but still uses sp-based methods (see details).
 }
 \details{
 This function is a wrapper around \code{\link[raster:rasterize]{rasterize}}.
+
+This function supports \code{\link[sf:sf]{sf}} objects, but still uses sp-based methods, from the packages sp, rgeos, and/or rgdal.
 }
 \examples{
 \dontrun{
@@ -49,12 +51,9 @@ if (require(tmap)) {
     	tm_raster() +
     tm_shape(NLD_prov) +
     	tm_borders() +
-    tm_format_NLD() + tm_style_grey()
+    tm_format("NLD") + tm_style_grey()
 }
 }
-}
-\references{
-Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 }
 \seealso{
 \code{\link{poly_to_raster}}

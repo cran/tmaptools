@@ -17,12 +17,11 @@ This page provides a brief overview of all package functions.
 \code{\link{approx_areas}}\tab Approximate area sizes of polygons \cr
 \code{\link{approx_distances}}\tab Approximate distances \cr
 \code{\link{bb}}\tab Create, extract or modify a bounding box \cr
-\code{\link{bb_sp}}\tab Convert bounding box to a spatial polygon \cr
+\code{\link{bb_poly}}\tab Convert bounding box to a polygon \cr
 \code{\link{get_asp_ratio}}\tab Get the aspect ratio of a shape object \cr
 \code{\link{get_IDs}}\tab Get ID values of a shape object \cr
 \code{\link{is_projected}}\tab Check if the map is projected \cr
 \code{\link{get_projection}}\tab Get the map projection \cr
-\code{\link{projection_units}}\tab Get or translate units of a projection \cr
 --------------------------- \tab --------------------------------------------------------------------------------------------------- \cr
 }
 }
@@ -76,9 +75,6 @@ This page provides a brief overview of all package functions.
 }
 }
 
-\references{
-Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
-}
 \author{
 Martijn Tennekes \email{mtennekes@gmail.com}
 }

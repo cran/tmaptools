@@ -9,10 +9,10 @@ smooth_map(shp, var = NULL, nrow = NA, ncol = NA, N = 250000,
   style = ifelse(is.null(breaks), "pretty", "fixed"), breaks = NULL,
   bandwidth = NA, threshold = 0, cover.type = NA, cover = NULL,
   cover.threshold = 0.6, weight = 1, extracting.method = "full",
-  buffer.width = NA, to.Raster = FALSE)
+  buffer.width = NA, to.Raster = NULL)
 }
 \arguments{
-\item{shp}{shape object of class \code{\link[sp:Spatial]{Spatial}}, \code{\link[raster:Raster-class]{Raster}}, or \code{sf}. Spatial points, polygons, and grids are supported. Spatial lines are not.}
+\item{shp}{shape object of class \code{\link[sp:Spatial]{Spatial}}, \code{\link[raster:Raster-class]{Raster}}, or \code{\link[sf:sf]{sf}}. Spatial points, polygons, and grids are supported. Spatial lines are not.}
 
 \item{var}{variable name. Not needed for \code{\link[sp:SpatialPoints]{SpatialPoints}}. If missing, the first variable name is taken. For polygons, the variable should contain densities, not absolute numbers.}
 
@@ -34,7 +34,7 @@ smooth_map(shp, var = NULL, nrow = NA, ncol = NA, N = 250000,
 
 \item{breaks}{in case \code{style=="fixed"}, breaks should be specified}
 
-\item{bandwidth}{single numeric value or vector of two numeric values that specify the bandwidth of the kernal density estimator. By default, it is 1/50th of the shortest side in units (specified with \code{unit.size}).}
+\item{bandwidth}{single numeric value or vector of two numeric values that specifiy the bandwidth of the kernal density estimator. By default, it is 1/50th of the shortest side in units (specified with \code{unit.size}).}
 
 \item{threshold}{threshold value when a 2D kernel density is applied. Density values below this threshold will be set to \code{NA}. Only applicable when \code{shp} is a \code{\link[sp:SpatialPoints]{SpatialPoints}} or \code{smooth.raster=TRUE}.}
 
@@ -50,24 +50,26 @@ smooth_map(shp, var = NULL, nrow = NA, ncol = NA, N = 250000,
 
 \item{buffer.width}{Buffer width of the iso lines to cut kernel density polygons. Should be small enough to let the polygons touch each other without space in between. However, too low values may cause geometric errors.}
 
-\item{to.Raster}{should the "raster" output (see \code{output}) be a \code{\link[raster:Raster-class]{RasterLayer}}? By default, it is returned as a \code{\link[sp:SpatialGridDataFrame]{SpatialGridDataFrame}}}
+\item{to.Raster}{not used anymore, since the "raster" output is always a \code{\link[raster:Raster-class]{RasterLayer}} as of version 2.0}
 }
 \value{
 List with the following items:
 \describe{
 \item{\code{"raster"}}{A smooth raster, which is either a \code{\link[sp:SpatialGridDataFrame]{SpatialGridDataFrame}} or a \code{\link[raster:Raster-class]{RasterLayer}} (see \code{to.Raster})}
-\item{\code{"iso"}}{Contour lines, which is a \code{\link[sp:SpatialLinesDataFrame]{SpatialLinesDataFrame}} (or an \code{sf} object if \code{shp} is an \code{sf})}
-\item{\code{"polygons"}}{Kernel density polygons, which is a \code{\link[sp:SpatialPolygonsDataFrame]{SpatialPolygonsDataFrame}} (or an \code{sf} object if \code{shp} is an \code{sf})}
+\item{\code{"iso"}}{Contour lines, which is an \code{\link[sf:sf]{sf}} object of spatial lines.}
+\item{\code{"polygons"}}{Kernel density polygons, which is an \code{\link[sf:sf]{sf}} object of spatial polygons}
 \item{\code{"bbox"}}{Bounding box of the used raster}
 \item{\code{"ncol"}}{Number of rows in the raster}
 \item{\code{"nrow"}}{Number of columns in the raster}
 }
 }
 \description{
-Create a smooth map from a shape object. A 2D kernel density estimator is applied to the shape, which can be a spatial points, polygons, or raster object. Various format are returned: a smooth raster, contour lines, and polygons. The covered area can be specified, i.e., the area outside of it is extracted from the output.
+Create a smooth map from a shape object. A 2D kernel density estimator is applied to the shape, which can be a spatial points, polygons, or raster object. Various format are returned: a smooth raster, contour lines, and polygons. The covered area can be specified, i.e., the area outside of it is extracted from the output. Note that this function supports \code{sf} objects, but still uses sp-based methods (see details).
 }
 \details{
-For the estimation of the 2D kernal density, code is borrowed from \code{\link[KernSmooth:bkde2D]{bkde2D}}. This implementation is slightly different: \code{\link[KernSmooth:bkde2D]{bkde2D}} takes point coordinates and applies linear binning, whereas in this function, the data is already binned, with values 1 if the values of \code{var} are not missing and 0 if values of \code{var} are missing.
+For the estimation of the 2D kernal density, code is borrowed from \code{\link[KernSmooth:bkde2D]{bkde2D}}. This implemention is slightly different: \code{\link[KernSmooth:bkde2D]{bkde2D}} takes point coordinates and applies linear binning, whereas in this function, the data is already binned, with values 1 if the values of \code{var} are not missing and 0 if values of \code{var} are missing.
+
+This function supports \code{\link[sf:sf]{sf}} objects, but still uses sp-based methods, from the packages sp, rgeos, and/or rgdal.
 }
 \examples{
 \dontrun{
@@ -82,7 +84,7 @@ if (require(tmap)) {
     vol_smooth <- smooth_map(vol, smooth.raster = FALSE, nlevels = 10)
 
     tm_shape(vol_smooth$polygons) +
-    	tm_fill(palette=terrain.colors(11), title="Elevation") +
+    	tm_fill("level", palette=terrain.colors(11), title="Elevation") +
     	tm_shape(vol_smooth$iso) +
     	tm_iso(col = "black", size = .7, fontcolor="black") +
     	tm_layout("Maunga Whau volcano (Auckland)", title.position=c("left", "bottom"),
@@ -95,7 +97,7 @@ if (require(tmap)) {
     ####################################
     data(NLD_muni)
 
-    NLD_muni$population_dens <- calc_densities(NLD_muni, "population")
+    NLD_muni$population_dens <- as.vector(calc_densities(NLD_muni, "population"))
 
     qtm(NLD_muni, fill="population_dens")
 
@@ -176,7 +178,4 @@ if (require(tmap)) {
 }
 }
 
-}
-\references{
-Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 }

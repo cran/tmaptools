@@ -7,23 +7,23 @@
 sample_dots(shp, vars = NULL, convert2density = FALSE, nrow = NA,
   ncol = NA, N = 250000, npop = NA, n = 10000, w = NA,
   shp.id = NULL, var.name = "class", var.labels = vars,
-  target = "metric", orig = NA, to = NA, randomize = TRUE,
-  output = c("points", "grid"), ...)
+  target = "metric", randomize = TRUE, output = c("points", "grid"),
+  orig = NULL, to = NULL, ...)
 }
 \arguments{
-\item{shp}{A shape object, more specifically, a \code{\link[sp:SpatialPolygonsDataFrame]{SpatialPolygonsDataFrame}} or an \code{sf} object that can be coerced as such.}
+\item{shp}{A shape object, more specifically, a \code{\link[sp:SpatialPolygonsDataFrame]{SpatialPolygonsDataFrame}} or an \code{\link[sf:sf]{sf}} object that can be coerced as such.}
 
-\item{vars}{Names of one or more variables that are contained in \code{shp}. If \code{vars} is not provided, the dots are sampled uniformly. If \code{vars} consists of one variable name, the dots are sampled according to the distribution of the corresponding variable. If \code{vars} consist of more than one variable names, then the dots are sampled according to the distributions of those variables. A categorical variable is added that contains the distribution classes (see \code{var.name}).}
+\item{vars}{Names of one or more variables that are contained in \code{shp}. If \code{vars} is not provided, the dots are sampled uniformly. If \code{vars} consists of one variable name, the dots are sampled according to the distribution of the corresponding variable. If \code{vars} consist of more than one variable names, then the dots are sampled according to the distributions of those variables. A categorical variable is added that contains the distrubtion classes (see \code{var.name}).}
 
 \item{convert2density}{Should the variables be converted to density values? Density values are used for the sampling algorithm, so use \code{TRUE} when the values are absolute counts.}
 
 \item{nrow}{Number of grid rows}
 
-\item{ncol}{Number of grid columns}
+\item{ncol}{Number of grid colums}
 
 \item{N}{Number of grid points}
 
-\item{npop}{Population total. If \code{NA}, it is reconstructed from the data. If density values are specified, the population total is approximated using the polygon areas (see also \code{target}, \code{orig} and \code{to}).}
+\item{npop}{Population total. If \code{NA}, it is recontructed from the data. If density values are specified, the population total is approximated using the polygon areas (see also \code{target}, \code{orig} and \code{to}).}
 
 \item{n}{Number of sampled dots}
 
@@ -37,18 +37,24 @@ sample_dots(shp, vars = NULL, convert2density = FALSE, nrow = NA,
 
 \item{target}{target unit, see \code{\link{approx_areas}}}
 
-\item{orig}{original unit, see \code{\link{approx_areas}}}
-
-\item{to}{unit multiplier, see \code{\link{approx_areas}}}
-
 \item{randomize}{should the order of sampled dots be randomized? The dots are sampled class-wise (specified by \code{vars}). If this order is not randomized (so if \code{randomize=FALSE}), then the dots from the last class will be drawn on top, which may introduce a perception bias. By default \code{randomize=TRUE}, so the sampled dots are randomized to prevent this bias.}
 
 \item{output}{format of the output: use \code{"points"} for spatial points, and \code{"grid"} for a spatial grid.}
 
+\item{orig}{not used anymore as of version 2.0}
+
+\item{to}{not used anymore as of version 2.0}
+
 \item{...}{other arguments passed on to \code{\link{calc_densities}} and \code{\link{approx_areas}}}
 }
+\value{
+A shape object, in the same format as \code{shp}
+}
 \description{
-Sample dots from spatial polygons according to a spatial distribution of a population. The population may consist of classes. The output, a SpatialPointsDataFrame, can be used to create a dot map (see \code{\link[tmap:tm_dots]{tm_dots}}), where the dots are colored according to the classes.
+Sample dots from spatial polygons according to a spatial distribution of a population. The population may consist of classes. The output, an sf object containing spatial points, can be used to create a dot map (see \code{\link[tmap:tm_dots]{tm_dots}}), where the dots are colored according to the classes. Note that this function supports \code{sf} objects, but still uses sp-based methods (see details).
+}
+\details{
+This function supports \code{\link[sf:sf]{sf}} objects, but still uses sp-based methods, from the packages sp, rgeos, and/or rgdal. Alternatively,  \code{\link[sf:st_sample]{st_sample}} can be used.
 }
 \examples{
 \dontrun{
@@ -60,7 +66,4 @@ if (require(tmap)) {
     	tm_layout("One dot represents one million people", title.position = c("right", "bottom"))
 }
 }
-}
-\references{
-Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 }

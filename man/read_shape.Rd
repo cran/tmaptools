@@ -4,19 +4,19 @@
 \alias{read_shape}
 \title{Read shape file}
 \usage{
-read_shape(file, current.projection = NULL, as.sf = FALSE, ...)
+read_shape(file, current.projection = NULL, as.sf = TRUE, ...)
 }
 \arguments{
 \item{file}{a shape file name (including directory)}
 
 \item{current.projection}{the current projection of the shape object, if it is missing in the shape file. See \code{\link{get_proj4}} for options. Use \code{\link{set_projection}} to reproject the shape object.}
 
-\item{as.sf}{should the shape be returned as an \code{sf} object?}
+\item{as.sf}{should the shape be returned as an \code{\link[sf:sf]{sf}} object?}
 
 \item{...}{other parameters, such as \code{stringsAsFactors}, are passed on to \code{\link[rgdal:readOGR]{readOGR}}}
 }
 \value{
-shape object from class \code{\link[sp:Spatial]{Spatial}} or \code{sf} if \code{as.sf = TRUE}
+shape object from class \code{\link[sp:Spatial]{Spatial}} or \code{\link[sf:sf]{sf}} if \code{as.sf = TRUE}
 }
 \description{
 Read an ESRI shape file. Optionally, set the current projection if it is missing.
@@ -25,7 +25,4 @@ Read an ESRI shape file. Optionally, set the current projection if it is missing
 This function is a convenient wrapper of rgdal's \code{\link[rgdal:readOGR]{readOGR}}. It is possible to set the current projection, if it is undefined in the shape file. If a reprojection is required, use \code{\link{set_projection}}.
 
 For the Netherlands: often, the Dutch Rijksdriehoekstelsel (Dutch National Grid) projection is provided in the shape file without proper datum shift parameters to wgs84. This functions automatically adds these parameters. See \url{http://www.qgis.nl/2011/12/05/epsg28992-of-rijksdriehoekstelsel-verschuiving/} (in Dutch) for details.
-}
-\references{
-Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 }

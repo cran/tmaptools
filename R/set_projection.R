@@ -1,21 +1,22 @@
 #' Set and get the map projection
 #'
 #' The function \code{set_projection} sets the projection of a shape file. It is
-#' a convenient wrapper of \code{\link[sp:spTransform]{spTransform}} and
+#' a convenient wrapper of \code{\link[sf:st_transform]{st_transform}} (or \code{\link[lwgeom:st_transform_proj]{st_transform_proj}}, see details) and
 #' \code{\link[raster:projectRaster]{projectRaster}} with shortcuts for commonly
 #' used projections. The projection can also be set directly in the plot call
 #' with \code{\link[tmap:tm_shape]{tm_shape}}. This function is also used to set the current
 #' projection information if this is missing. The function \code{get_projection}
 #' is used to get the projection information.
 #'
+#' For \code{\link[sf:sf]{sf}} objects, \code{set_projection} first tries to use \code{\link[sf:st_transform]{sf::st_transform}}, which uses the GDAL API. For some projections, most notably Winkel Tripel (\code{"wintri"}), is doesn't work. In these cases, \code{set_projection} will use \code{\link[lwgeom:st_transform_proj]{lwgeom::st_transform_proj}}, which uses the PROJ.4 API.
+#'
 #' For raster objects, the projection method is based on the type of data. For numeric layers, the bilinear method is used, and for categorical layers the nearest neighbor. See \code{\link[raster:projectRaster]{projectRaster}} for details.
 #'
-#' @param shp shape object of class \code{\link[sp:Spatial]{Spatial}},
-#'   \code{\link[raster:Raster-class]{Raster}}, or \code{sf} (see details).
+#' @param shp shape object, which is an object from a class defined by the \code{\link[sf:sf]{sf}}, \code{\link[sp:sp]{sp}}, or \code{\link[raster:raster-package]{raster}} package.
 #' @param projection new projection. See \code{\link{get_proj4}} for options. This argument is only used to transform the \code{shp}. Use \code{current.projection} to specify the current projection of \code{shp}.
 #' @param current.projection the current projection of \code{shp}. See \code{\link{get_proj4}} for possible options. Only use this if the current projection is missing or wrong.
 #' @param overwrite.current.projection logical that determines whether the current projection is overwritten if it already has a projection that is different.
-#' @param as.CRS should a CRS object be returned instead of a PROJ.4 character string? Default is \code{FALSE}.
+#' @param output output format of the projection. One of \code{"character"}, \code{"crs"} (from \code{sf} package), \code{"epsg"} or \code{"CRS"} (from \code{sp}/\code{rgdal} package)
 #' @param guess.longlat if \code{TRUE}, it checks if the coordinates are within -180/180 and -90/90, and if so, it returns the WGS84 longlat projection (which is \code{get_proj4("longlat")}).
 #' @name set_projection
 #' @rdname set_projection
@@ -23,69 +24,64 @@
 #' @importFrom raster projectRaster
 #' @importFrom rgdal getPROJ4VersionInfo
 #' @return \code{set_projection} returns a (transformed) shape object with updated projection information. \code{get_projection} returns the \code{PROJ.4} character string of \code{shp}.
-#' @references Tennekes, M., 2018, {tmap}: Thematic Maps in {R}, Journal of Statistical Software, 84(6), 1-39, \href{https://doi.org/10.18637/jss.v084.i06}{DOI}
 #' @export
 set_projection <- function(shp, projection=NA, current.projection=NA, overwrite.current.projection=FALSE) {
 	shp.name <- deparse(substitute(shp))
 
-	is_sf <- inherits(shp, c("sf", "sfc"))
-	if (is_sf) shp <- as(shp, "Spatial")
+	cls <- class(shp)
+	is_sp <- inherits(shp, "Spatial")
+	is_sp_raster <- inherits(shp, c("SpatialGrid", "SpatialPixels"))
+	if (is_sp) shp <- (if (is_sp_raster) brick(shp) else as(shp, "sf"))
 
-	shp.CRS <- get_projection(shp, as.CRS = TRUE)
-	current.CRS <- get_proj4(current.projection, as.CRS=TRUE)
-	proj.CRS <- get_proj4(projection, as.CRS=TRUE)
+	shp.crs <- get_projection(shp, output="crs")
+	current.crs <- get_proj4(current.projection, output = "crs")
+	proj.crs <- get_proj4(projection, output = "crs")
 
-	if (is.na(shp.CRS)) {
-		if (is.na(current.CRS)) {
+	if (is.na(shp.crs)) {
+		if (is.na(current.crs)) {
 			stop("Currect projection of shape object unknown. Please specify the argument current.projection. The value \"longlat\", which stands for Longitude-latitude (WGS84), is most commonly used.")
 		} else {
-			if (inherits(shp, "Spatial")) {
-				shp@proj4string <- current.CRS
+			if (inherits(shp, "sf")) {
+				st_crs(shp) <- current.crs
 			} else {
-				shp@crs <- current.CRS
+				shp@crs <- get_proj4(current.crs, output = "CRS")
 			}
 			#current.projection <- current.proj4
 		}
 	} else {
-		if (!is.na(current.CRS)) {
-			if (identical(current.CRS, shp.CRS)) {
+		if (!is.na(current.crs)) {
+			if (identical(current.crs, shp.crs)) {
 				warning("Current projection of ", shp.name, " already known.", call. = FALSE)
 			} else {
 				if (overwrite.current.projection) {
-					warning("Current projection of ", shp.name, " differs from ", CRSargs(current.CRS), ", but is overwritten.", call. = FALSE)
-					if (inherits(shp, "Spatial")) {
-						shp@proj4string <- current.CRS
+					warning("Current projection of ", shp.name, " differs from ", current.crs$proj4string, ", but is overwritten.", call. = FALSE)
+					if (inherits(shp, "sf")) {
+					    st_crs(shp) <- current.crs
 					} else {
-						shp@crs <- current.CRS
+						shp@crs <- get_proj4(current.crs, output = "CRS")
 					}
 
 				} else {
-					stop(shp.name, " already has projection: ", CRSargs(shp.CRS), ". This is different from the specified current projection ", CRSargs(current.CRS), ". If the specified projection is correct, use overwrite.current.projection=TRUE.", call. = FALSE)
+					stop(shp.name, " already has projection: ", shp.crs$proj4string, ". This is different from the specified current projection ", current.crs$proj4string, ". If the specified projection is correct, use overwrite.current.projection=TRUE.", call. = FALSE)
 				}
 			}
 		} else {
-			current.CRS <- shp.CRS
+			current.crs <- shp.crs
 		}
 	}
 
 
-	if (!is.na(proj.CRS)) {
+	if (!is.na(proj.crs)) {
 		PROJ4_version_nr <- get_proj4_version()
 
-		if (length(grep("+proj=wintri", CRSargs(current.CRS), fixed = TRUE)) && PROJ4_version_nr < 491) {
+		if (length(grep("+proj=wintri", current.crs$proj4string, fixed = TRUE)) && PROJ4_version_nr < 491) {
 			stop("Unable to reproject a shape from the Winkel Tripel projection with PROJ.4 version < 4.9.1")
 		}
 
-		cls <- class(shp)
-
-		if (inherits(shp, c("SpatialGrid", "SpatialPixels"))) {
-			shp <- brick(shp)
-			recast <- TRUE
-		} else {
-			recast <- FALSE
-		}
 
 		if (inherits(shp, "Raster")) {
+		    proj.CRS <- get_proj4(proj.crs, output = "CRS")
+
 			#raster_data <- get_raster_data(shp)
 			has_color_table <- (length(colortable(shp))>0)
 
@@ -128,63 +124,134 @@ set_projection <- function(shp, projection=NA, current.projection=NA, overwrite.
 			# }, names(which(!isnum)), lvls[!isnum], SIMPLIFY=FALSE)
 			# shp@data@attributes <- dfs
 		} else {
-			shp <- tryCatch({
-				spTransform(shp, proj.CRS)
-			}, error=function(e) {
-				stop("Unable to set the projection to ", CRSargs(proj.CRS), ".", call.=FALSE)
-			}, warning=function(w){
-				NULL
-			})
+			shp <- st_transform2(shp, proj.crs)
 		}
-		if (recast) {
+		if (is_sp_raster) {
 			shp <- as(shp, cls)
 			names(shp) <- names(isnum)
 		}
 	}
 
-	if (is_sf) as(shp, "sf") else shp
+	shp
+
+	#if (is_sp && !is_sp_raster) as(shp, cls) else shp
 }
+
+st_transform2 <- function(x, crs, ...) {
+    args <- list(...)
+    y <- tryCatch(do.call(sf::st_transform, c(list(x=x, crs=crs), args)),
+             error = function(e) NULL,
+             warning = function(w) NULL)
+    if (is.null(y)) {
+        y <- tryCatch(do.call(lwgeom::st_transform_proj, c(list(x=x, crs=crs), args)),
+                 error = function(e) {
+                      stop("Unable to set the projection to ", crs$proj4string, ".", call. = FALSE)
+                 } )
+    }
+    y
+}
+
+
+set_raster_levels <- function(shp, lvls) {
+	isf <- !vapply(lvls, is.null, logical(1))
+	cls <- class(shp)
+	if (any(isf)) {
+		shp@data@isfactor <- isf
+		dfs <- mapply(function(nm, lv) {
+			df <- data.frame(ID=1:length(lv), levels=factor(lv, levels=lv))
+			if (cls=="RasterBrick") names(df)[2] <- nm
+			df
+		}, names(which(isf)), lvls[isf], SIMPLIFY=FALSE)
+		shp@data@attributes <- dfs
+	}
+	shp
+}
+
+get_RasterLayer_levels <- function(r) {
+	if (r@data@isfactor) {
+		dt <- r@data@attributes[[1]]
+		levelsID <- ncol(dt)
+		as.character(dt[[levelsID]])
+	} else {
+		NULL
+	}
+}
+
+get_raster_names <- function(shp) {
+    nms <- names(shp)
+
+    # overwrite unknown first names with FILE__VALUES
+    if (inherits(shp, "RasterStack")) {
+        if (shp@layers[[1]]@data@names[1]=="") nms[1] <- "FILE__VALUES"
+    } else {
+        if (shp@data@names[1]=="") nms[1] <- "FILE__VALUES"
+    }
+    nms
+}
+
+get_raster_levels <- function(shp, layerIDs) {
+	if (missing(layerIDs)) layerIDs <- 1L:nlayers(shp)
+
+	if (inherits(shp, "Spatial")) {
+		return(lapply(attr(shp, "data")[,layerIDs], levels))
+	}
+
+	shpnames <- get_raster_names(shp)[layerIDs]
+	if (inherits(shp, "RasterLayer")) {
+		lvls <- list(get_RasterLayer_levels(shp))
+	} else if (inherits(shp, "RasterStack")) {
+		lvls <- lapply(shp@layers[layerIDs], get_RasterLayer_levels)
+	} else if (inherits(shp, "RasterBrick")) {
+		isfactor <- shp@data@isfactor
+		if (all(!isfactor)) {
+			lvls <- lapply(shpnames, function(sn) NULL)
+		} else {
+			atb <- shp@data@attributes
+			atb <- atb[vapply(atb, length, integer(1))!=0]
+			stopifnot(sum(isfactor)==length(atb))
+			isfactor2 <- isfactor[layerIDs]
+
+			lvls <- rep(list(NULL), length(layerIDs))
+			if (any(isfactor2)) {
+				atb2 <- atb[match(layerIDs[isfactor2], which(isfactor))]
+
+				lvls[isfactor2] <- lapply(atb2, function(a) {
+					if (class(a)=="list") a <- a[[1]]
+					levelsID <- ncol(a) # levels is always the last column of the attributes data.frame (?)
+					as.character(a[[levelsID]])
+				})
+			}
+		}
+	}
+	names(lvls) <- shpnames
+	lvls
+}
+
 
 
 #' @name get_projection
 #' @rdname set_projection
 #' @export
-get_projection <- function(shp, as.CRS=FALSE, guess.longlat=FALSE) {
-	if (as.CRS) {
-		res <- if (inherits(shp, "Spatial")) {
-			attr(shp, "proj4string")
-		} else if (inherits(shp, "Raster")) {
-			attr(shp, "crs")
-		} else if (inherits(shp, c("sf", "sfc"))) {
-		    CRS(get_sf_proj(shp) )
-		} else {
-			stop("shp is neither a Spatial nor a Raster object")
-		}
+get_projection <- function(shp, guess.longlat=FALSE,
+                           output = c("character", "crs", "epsg", "CRS")) {
+    p <- if (inherits(shp, c("sf", "sfc"))) {
+        st_crs(shp)
+    } else if (inherits(shp, "Spatial")) {
+        st_crs(attr(attr(shp, "proj4string"), "projargs"))
+    } else if (inherits(shp, "Raster")) {
+        st_crs(attr(attr(shp, "crs"), "projargs"))
+    } else {
+        stop("shp is neither a sf, sp, nor a raster object")
+    }
 
-		# check for missing values
-		if (is.na(res) && guess.longlat) {
-		    if (!is_projected(shp)) {
-	            .CRS_longlat
-		    } else
-		        CRS("")
-		} else res
-	} else {
-	    res <- if (inherits(shp, c("sf", "sfc"))) {
-	        get_sf_proj(shp)
-	    } else proj4string(shp)
+    output <- match.arg(output)
 
-	    # check for missing values
-	    if (is.na(res) && guess.longlat) {
-	        if (!is_projected(shp)) {
-	            attr(.CRS_longlat, "projargs")
-	        } else
-	            NA
-	    } else res
-	}
-}
-
-get_sf_proj <- function(shp) {
-    attr(shp[[attr(shp, "sf_column")]], "crs")$proj4string
+    switch(output,
+           character = p$proj4string,
+           crs = p,
+           epsg = p$epsg,
+           CRS = CRS(ifelse(is.na(p$proj4string), "", p$proj4string))
+    )
 }
 
 
