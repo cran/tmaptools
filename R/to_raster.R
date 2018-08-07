@@ -149,11 +149,7 @@ poly_to_raster <- function(shp, r=NULL, nrow=NA, ncol=NA, N=250000, use.cover=FA
 	}
 
 	if (!copy.data) {
-	  if (to.Raster) {
-	    return(rst)
-	  } else {
-	    return(as(rst, "SpatialGridDataFrame"))
-	  }
+        return(rst)
 	}
 
 
@@ -169,11 +165,9 @@ poly_to_raster <- function(shp, r=NULL, nrow=NA, ncol=NA, N=250000, use.cover=FA
 	}
 
 	# return Raster object or SGDF
-	if (to.Raster) {
-		if (ncol(rshp@data)==1) {
-			as(rshp, "RasterLayer")
-		} else {
-			as(rshp, "RasterBrick")
-		}
-	} else rshp
+	if (ncol(rshp@data)==1) {
+		as(rshp, "RasterLayer")
+	} else {
+		as(rshp, "RasterBrick")
+	}
 }
