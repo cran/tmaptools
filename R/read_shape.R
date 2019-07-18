@@ -1,4 +1,4 @@
-#' Read shape file
+#' Read shape file (deprecated)
 #'
 #' Read an ESRI shape file. Optionally, set the current projection if it is missing.
 #'
@@ -15,6 +15,7 @@
 #' @import sp
 #' @export
 read_shape <- function(file, current.projection=NULL, as.sf=TRUE, ...){
+    .Deprecated("st_read", package = "sf", msg = "This function is deprecated and has been migrated to github.com/mtennekes/oldtmaptools")
 
 	# determine region ID
 	if (file.exists(file)) {
@@ -42,16 +43,18 @@ read_shape <- function(file, current.projection=NULL, as.sf=TRUE, ...){
 		}
 
 		## rd projection correction: add towgs84 parameter to frequently used rd projection strings
-		if (prj %in% c("+proj=sterea +lat_0=52.15616055555555 +lon_0=5.38763888888889 +k=0.999908 +x_0=155000 +y_0=463000 +ellps=bessel +units=m +no_defs",
-					   "+proj=sterea +lat_0=52.15616055555555 +lon_0=5.38763888888889 +k=0.9999079 +x_0=155000 +y_0=463000 +ellps=bessel +units=m +no_defs",
-					   "+proj=sterea +lat_0=52.156161 +lon_0=5.387639 +k=0.999908 +x_0=155000 +y_0=463000 +ellps=bessel +units=m +no_defs")) {
+		if (prj %in% .wrong_rd_projections) {
+		    warning("rd projection recognized, but witout +towgs84 attribute. Shape has been converted to EPSG:28992")
 			shp <- suppressWarnings(set_projection(shp, current.projection="rd", overwrite.current.projection=TRUE))
 		}
 	}
 	if (as.sf) as(shp, "sf") else shp
 }
 
-#' Write shape file
+
+
+
+#' Write shape file (deprecated)
 #'
 #' Write a shape object to an ESRI shape file.
 #'
@@ -63,6 +66,8 @@ read_shape <- function(file, current.projection=NULL, as.sf=TRUE, ...){
 #' @importFrom rgdal writeOGR
 #' @export
 write_shape <- function(shp, file) {
+    .Deprecated("st_write", package = "sf", msg = "This function is deprecated and has been migrated to github.com/mtennekes/oldtmaptools")
+
 	shpname <- deparse(substitute(shp))
 	dir <- dirname(file)
 	base <- basename(file)

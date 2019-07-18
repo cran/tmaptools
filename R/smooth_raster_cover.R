@@ -1,4 +1,4 @@
-#' Get a smoothed cover of a raster object
+#' Get a smoothed cover of a raster object (deprecated)
 #'
 #' Get a smoothed cover of a raster object. From all non-missing values of a raster object, a 2D kernal density is applied. The output is a \code{sf} object of spatial polygons. Used by \code{\link{smooth_map}}. Note that this function supports \code{sf} objects, but still uses sp-based methods (see details). Note that this function supports \code{sf} objects, but still uses sp-based methods (see details).
 #'
@@ -15,6 +15,7 @@
 #' @importMethodsFrom raster as.matrix
 #' @export
 smooth_raster_cover <- function(shp, var=NULL, bandwidth=NA, threshold=.6, output="polygons") {
+    .Deprecated("", package = "", msg = "This function is deprecated and has been migrated to github.com/mtennekes/oldtmaptools")
 
 	# convert to rasterlayer
 	if (!inherits(shp, "RasterLayer")) {
@@ -56,7 +57,7 @@ smooth_raster_cover <- function(shp, var=NULL, bandwidth=NA, threshold=.6, outpu
 
 
 	rect <- as(extent(bbx[c(1,3,2,4)]), "SpatialPolygons")
-	rect <- set_projection(rect, current.projection = prj)
+	rect <- as(set_projection(rect, current.projection = prj), "Spatial")
 
 	cp_nna <- lines2polygons(ply = rect, lns = cl2_nna, rst = raster(shp, "NNA__VALUES"), lvls = threshold)[2,]
 

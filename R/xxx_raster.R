@@ -1,13 +1,27 @@
-raster_colors <- function(x) {
+raster_colors <- function(x, use.colortable = FALSE, max.value = 255) {
+	
+	x[is.na(x)] <- 0
+	
 	n <- nrow(x)
 
 	# get alpha transparency
 	if (ncol(x)==4) {
 		a <- x[,4]
 		x <- x[,1:3]
+		x[x]
 	} else {
 		a <- NULL
 	}
+
+	if (!use.colortable) {
+		if (is.null(a)) {
+			cols <- rgb(x[,1], x[,2], x[,3], maxColorValue = max.value)
+		} else {
+			cols <- rgb(x[,1], x[,2], x[,3], a, maxColorValue = max.value)
+		}
+		return(factor(cols))
+	}
+	
 
 	storage.mode(x) <- "integer"
 	v <- x[, 1] * 1e6L + x[, 2] * 1e3L + x[, 3]
@@ -72,7 +86,7 @@ extract_raster_data <- function(nm, isf, d, a){
 		as.data.frame(alist)
 	} else {
 		df <- data.frame(d)
-		names(df) <- nm
+		names(df) <- ifelse(nm == "", "layer", nm)
 		df
 	}
 }
@@ -81,9 +95,21 @@ get_raster_layer_data <- function(rl) {
 	extract_raster_data(nm = rl@data@names, isf = rl@data@isfactor, d = rl@data@values, a = rl@data@attributes)
 }
 
+fromDisk2 <- function(x) {
+	if (inherits(x, "RasterStack")) {
+		y <- FALSE
+		for (i in 1L:nlayers(x)) {
+			if (fromDisk(x[[i]])) y <- TRUE
+		} # stackApply doens't work
+	} else {
+		y <- fromDisk(x)
+	}
+	y
+}
+
 get_raster_data <- function(shp, show.warnings = TRUE) {
 	cls <- class(shp)
-	if (fromDisk(shp)) {
+	if (fromDisk2(shp)) {
 		data <- raster::as.data.frame(shp)
 		layerID <- 1L:ncol(data)
 	} else if (inherits(shp, "RasterLayer")) {
@@ -96,6 +122,8 @@ get_raster_data <- function(shp, show.warnings = TRUE) {
 		} else {
 			nms <- shp@data@names
 			if (nms[1]=="") nms <- colnames(shp@data@values)
+			if (length(nms)!= nlayers(shp)) nms <- paste0("V", 1L:nlayers(shp))
+			
 			
 			nl <- length(nms)
 			

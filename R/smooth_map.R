@@ -1,4 +1,4 @@
-#' Create a smooth map
+#' Create a smooth map (deprecated)
 #'
 #' Create a smooth map from a shape object. A 2D kernel density estimator is applied to the shape, which can be a spatial points, polygons, or raster object. Various format are returned: a smooth raster, contour lines, and polygons. The covered area can be specified, i.e., the area outside of it is extracted from the output. Note that this function supports \code{sf} objects, but still uses sp-based methods (see details).
 #'
@@ -48,6 +48,8 @@
 #' @example ./examples/smooth_map.R
 #' @export
 smooth_map <- function(shp, var=NULL, nrow=NA, ncol=NA, N=250000, unit="km", unit.size=1000, smooth.raster=TRUE, nlevels=5, style = ifelse(is.null(breaks), "pretty", "fixed"), breaks = NULL, bandwidth=NA, threshold=0, cover.type=NA, cover=NULL, cover.threshold=.6, weight=1, extracting.method="full", buffer.width=NA, to.Raster=NULL) {
+    .Deprecated("", package = "", msg = "This function is deprecated and has been migrated to github.com/mtennekes/oldtmaptools")
+
     if (!missing(to.Raster)) warning("to.Raster is not used anymore, since the \"raster\" output is always a raster object as of version 2.0")
 
     is_sf <- inherits(shp, c("sf", "sfc"))
@@ -129,13 +131,13 @@ smooth_map <- function(shp, var=NULL, nrow=NA, ncol=NA, N=250000, unit="km", uni
 
 		if (cover.type=="rect") {
 			cover <- as(extent(bbx[c(1,3,2,4)]), "SpatialPolygons")
-			if (!is.na(prj)) cover <- set_projection(cover, current.projection = prj)
+			if (!is.na(prj)) cover <- as(set_projection(cover, current.projection = prj), "Spatial")
 			cover_r[] <- TRUE
 		} else if (cover.type=="original") {
 			if (inherits(shp, "Raster")) {
 				warning("cover.type=\"original\" only applied to raster output")
 				cover <- as(extent(bbx[c(1,3,2,4)]), "SpatialPolygons")
-				if (!is.na(prj)) cover <- set_projection(cover, current.projection = prj)
+				if (!is.na(prj)) cover <- as(set_projection(cover, current.projection = prj), "Spatial")
 
 				cover_r <- shp
 
@@ -145,7 +147,7 @@ smooth_map <- function(shp, var=NULL, nrow=NA, ncol=NA, N=250000, unit="km", uni
 				} else if (inherits(shp, "SpatialPolygons")) {
 					cover <- gUnaryUnion(shp)
 				}
-				if (!gIsValid(cover)) cover <- gBuffer(cover, width=0)
+				cover <- checknfix_sp(cover)
 				cover@bbox <- matrix(bbx, ncol=2)
 				cover_r <- poly_to_raster(cover, nrow = nrow, ncol = ncol)
 			}
@@ -154,13 +156,16 @@ smooth_map <- function(shp, var=NULL, nrow=NA, ncol=NA, N=250000, unit="km", uni
 			cover_list <- smooth_raster_cover(shp, var=var, bandwidth = bandwidth*unit.size, threshold = cover.threshold, output=c("raster", "polygons"))
 			cover_r <- cover_list$raster
 			cover_r[!cover_r[]] <- NA
-			cover <- cover_list$polygons
+			cover <- as(cover_list$polygons, "Spatial")
 		}
 	} else {
 	    if (inherits(cover, c("sf", "sfc"))) cover <- as(cover, "Spatial")
 
 		cover <- gUnaryUnion(cover)
 		cover <- spTransform(cover, CRS(prj))
+
+		cover <- checknfix_sp(cover)
+
 		cover_r <- poly_to_raster(cover, nrow = nrow, ncol = ncol)
 		bbc <- as.vector(bb(cover))
 		bbx[1:2] <- pmin(bbx[1:2], bbc[1:2])
@@ -267,6 +272,8 @@ smooth_map <- function(shp, var=NULL, nrow=NA, ncol=NA, N=250000, unit="km", uni
 	}
 	setTxtProgressBar(pb, .7)
 
+
+
 	# make sure lines are inside poly
 	cp <- suppressWarnings(lines2polygons(ply = cover, lns = cl2, rst = r, lvls=lvls, extracting.method="full", buffer.width = buffer.width))
 	if (thresLevel) {
@@ -354,6 +361,9 @@ lines2polygons <- function(ply, lns, rst=NULL, lvls, extracting.method="full", b
 	# cut the poly with isolines
 	dpi <- if (is.null(lns)) ply else gDifference(ply, blpi)
 
+	dpi <- checknfix_sp(dpi)
+
+
 	if (missing(rst)) {
 		dpi
 	} else {
@@ -437,3 +447,8 @@ lines2polygons <- function(ply, lns, rst=NULL, lvls, extracting.method="full", b
 		x <- do.call("sbind", res)
 	}
 }
+
+checknfix_sp <- function(x) {
+    if (!suppressWarnings(gIsValid(x))) gBuffer(x, width = 0) else x
+}
+
