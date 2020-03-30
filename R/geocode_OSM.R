@@ -6,21 +6,23 @@
 #' @param projection projection in which the coordinates and bounding box are returned. Either a \code{\link[sp:CRS]{CRS}} object or a character value. If it is a character, it can either be a \code{PROJ.4} character string or a shortcut. See \code{\link{get_proj4}} for a list of shortcut values. By default latitude longitude coordinates.
 #' @param return.first.only Only return the first result
 #' @param details provide output details, other than the point coordinates and bounding box
-#' @param as.data.frame Return the output as a \code{data.frame}. If \code{FALSE}, a list is returned with at least two items: \code{"coords"}, a vector containing the coordinates, and \code{"bbox"}, the corresponding bounding box. By default false, unless \code{q} contains multiple queries
-#' @param as.sf Return the output as \code{\link[sf:sf]{sf}} object. If \code{TRUE}, \code{return.first.only} will be set to \code{TRUE}.
+#' @param as.data.frame Return the output as a \code{data.frame}. If \code{FALSE}, a list is returned with at least two items: \code{"coords"}, a vector containing the coordinates, and \code{"bbox"}, the corresponding bounding box. By default false, unless \code{q} contains multiple queries. If \code{as.sf = TRUE} (see below), \code{as.data.frame} will set to \code{TRUE}.
+#' @param as.sf Return the output as \code{\link[sf:sf]{sf}} object. If \code{TRUE}, \code{return.first.only} will be set to \code{TRUE}. Two geometry columns are added: \code{bbox} and \code{point}. The argument \code{geometry} determines which of them is set to the default geometry.
+#' @param geometry When \code{as.sf}, this arugment determines which column (\code{bbox} or \code{point}) is set as geometry column. Note that the geometry can be changed afterwards with \code{\link[sf:st_set_geometry]{st_set_geometry}}.
 #' @param server OpenStreetMap Nominatim server name. Could also be a local OSM Nominatim server.
 #' @return If \code{as.SPDF} then a \code{\link[sp:SpatialPointsDataFrame]{SpatialPointsDataFrame}} is returned. Else, if \code{as.data.frame}, then a \code{data.frame} is returned, else a list.
 #' @export
 #' @importFrom XML xmlChildren xmlRoot xmlAttrs xmlTreeParse xmlValue
 #' @example ./examples/geocode_OSM.R
 #' @seealso \code{\link{rev_geocode_OSM}}, \code{\link{bb}}
-geocode_OSM <- function(q, projection=NULL, return.first.only=TRUE, details=FALSE, as.data.frame=NA, as.sf=FALSE, server="http://nominatim.openstreetmap.org") {
-	n <- length(q)
+geocode_OSM <- function(q, projection=NULL, return.first.only=TRUE, details=FALSE, as.data.frame=NA, as.sf=FALSE, geometry=c("point", "bbox"), server="http://nominatim.openstreetmap.org") {
+    n <- length(q)
 	q2 <- gsub(" ", "+", enc2utf8(q), fixed = TRUE)
 	addr <- paste0(server, "/search?q=", q2, "&format=xml&polygon=0&addressdetails=0")
 
+	geometry <- match.arg(geometry)
+
 	project <- !missing(projection)
-	if (project) projection <- get_proj4(projection, output = "crs")
 
 
 	if (is.na(as.data.frame)) as.data.frame <- (n>1)
@@ -67,20 +69,24 @@ geocode_OSM <- function(q, projection=NULL, return.first.only=TRUE, details=FALS
 				names(coords) <- c("x", "y")
 
 			} else {
-				b <- bb(xlim=search_result_bb[3:4], ylim=search_result_bb[1:2], current.projection = .CRS_longlat, projection=projection)
+				b <- bb(xlim=search_result_bb[3:4], ylim=search_result_bb[1:2], current.projection = .crs_longlat, projection=projection)
 
 				search_result_bb <- b[c(2,4,1,3)]
 				names(search_result_bb) <- c("y_min", "y_max", "x_min", "x_max")
 
-                p <- st_sf(st_sfc(st_point(search_result_loc[2:1]), crs = .crs_longlat))
+                p <- sf::st_sf(sf::st_sfc(sf::st_point(search_result_loc[2:1]), crs = .crs_longlat))
 
-				p <- set_projection(p, projection=projection)
+				p <- sf::st_transform(p, crs=projection)
 
-				coords <- as.vector(st_coordinates(p))
+				coords <- as.vector(sf::st_coordinates(p))
 				names(coords) <- c("x", "y")
 
 				search_result_loc <- as.list(coords)
 				names(search_result_loc) <- c("x", "y")
+			}
+
+			if (as.sf) {
+			    bbpoly <- bb_poly(b)
 			}
 
 			res <- if (as.data.frame) {
@@ -91,6 +97,10 @@ geocode_OSM <- function(q, projection=NULL, return.first.only=TRUE, details=FALS
 				c(list(query=q[k],
 					   coords=coords,
 					   bbox=b))
+			}
+
+			if (as.sf) {
+			    res <- c(res, list(bbox=bbpoly))
 			}
 
 			if (details) res <- c(res, search_result_id)
@@ -105,19 +115,20 @@ geocode_OSM <- function(q, projection=NULL, return.first.only=TRUE, details=FALS
 		df <- do.call(rbind, output3)
 
 		if (as.sf) {
+		    names(df)[names(df) == "geometry"] <- "bbox"
 			if (!project) {
-
 			    df$x <- df$lon
 			    df$y <- df$lat
-
-			    res <- st_as_sf(df, coords = c("x","y"), crs=.crs_longlat)
+			    res <- sf::st_as_sf(df, coords = c("x","y"), crs=.crs_longlat)
 			} else {
 			    df$x2 <- df$x
 			    df$y2 <- df$y
-
-			    res <- st_as_sf(df, coords = c("x2","y2"), crs=.crs_longlat)
+			    res <- sf::st_as_sf(df, coords = c("x2","y2"), crs=.crs_longlat)
 			}
-			res
+		    names(res)[names(res) == "geometry"] <- "point"
+
+            if (geometry == "point") res <- sf::st_set_geometry(res, "point")
+		    sf::st_set_crs(res, .crs_longlat)
 		} else {
 			df
 		}
@@ -136,7 +147,7 @@ geocode_OSM <- function(q, projection=NULL, return.first.only=TRUE, details=FALS
 #' @param x x coordinate(s), or a spatial points object (\code{\link[sf:sf]{sf}} or \code{\link[sp:SpatialPoints]{SpatialPoints}})
 #' @param y y coordinate(s)
 #' @param zoom zoom level
-#' @param projection projection in which the coordinates \code{x} and \code{y} are provided. Either a \code{\link[sp:CRS]{CRS}} object or a character value. If it is a character, it can either be a \code{PROJ.4} character string or a shortcut. See \code{\link{get_proj4}} for a list of shortcut values. By default latitude longitude coordinates.
+#' @param projection projection in which the coordinates \code{x} and \code{y} are provided.
 #' @param as.data.frame return as data.frame (\code{TRUE}) or list (\code{FALSE}). By default a list, unless multiple coordinates are provided.
 #' @param server OpenStreetMap Nominatim server name. Could also be a local OSM Nominatim server.
 #' @export
@@ -144,33 +155,21 @@ geocode_OSM <- function(q, projection=NULL, return.first.only=TRUE, details=FALS
 #' @return A data frmame or a list with all atributes that are contained in the search result
 #' @example ./examples/rev_geocode_OSM.R
 #' @seealso \code{\link{geocode_OSM}}
-rev_geocode_OSM <- function(x, y=NULL, zoom=NULL, projection=NULL, as.data.frame=NA, server="http://nominatim.openstreetmap.org") {
+rev_geocode_OSM <- function(x, y=NULL, zoom=NULL, projection=4326, as.data.frame=NA, server="http://nominatim.openstreetmap.org") {
 
 	project <- !missing(projection)
 
-	if (project) projection <- get_proj4(projection, output = "CRS")
+
 
 	if (inherits(x, "Spatial")) x <- as(x, "sf")
 
 	if (inherits(x, "sf")) {
-	    if (!all(st_geometry_type(x) == "POINT")) stop("sf object should only contain POINT geometries")
+	    if (!all(sf::st_geometry_type(x) == "POINT")) stop("sf object should only contain POINT geometries")
 
-		isproj <- is_projected(x)
+        x <- sf::st_transform(x, crs = .crs_longlat)
 
-		if (is.na(isproj)) {
-			if (project) {
-				x <- set_projection(x, current.projection = projection, projection=.crs_longlat)
-			} else {
-				ll <- maybe_longlat(st_bbox(x))
-				if (!ll) stop("Projection of x unknown. Please specify projection.")
-				warning("Projection of SpatialPoints object unknown. Assuming longitude latitude coordinates.")
-				x <- set_projection(x, current.projection = .crs_longlat)
-			}
-		} else {
-			if (isproj) x <- set_projection(x, projection = .crs_longlat)
-		}
 		n <- nrow(x)
-		co <- st_coordinates(x)
+		co <- sf::st_coordinates(x)
 		lon <- x <- co[,1]
 		lat <- y <- co[,2]
 	} else {
@@ -184,11 +183,12 @@ rev_geocode_OSM <- function(x, y=NULL, zoom=NULL, projection=NULL, as.data.frame
 			lon <- x
 			lat <- y
 		} else {
-			projection <- get_proj4(projection, output = "CRS")
-			single_point <- SpatialPoints(matrix(c(x,y), ncol=2), proj4string=projection)
-			coords <- attr(set_projection(single_point, projection = .CRS_longlat), "coords")
-			lon <- coords[,1]
-			lat <- coords[,2]
+			projection <- sf::st_crs(projection)
+			coords <- data.frame(x=x, y=y)
+			single_point <- sf::st_as_sf(x = coords, coords = c("x", "y"), crs = projection)
+			coords <- sf::st_transform(single_point, crs = .crs_longlat)
+			lon <- sf::st_coordinates(coords)[,1]
+			lat <- sf::st_coordinates(coords)[,2]
 		}
 	}
 

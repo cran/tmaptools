@@ -14,7 +14,6 @@
 #' @param ... arguments passed on to \code{\link{bb}}.
 #' @name read_osm
 #' @rdname read_osm
-#' @import sp
 #' @importFrom raster raster
 #' @export
 #' @example ./examples/read_osm.R
@@ -34,6 +33,8 @@ read_osm <- function(x, zoom=NULL, type="osm", minNumTiles=NULL, mergeTiles=NULL
 	args_bb <- args[intersect(names(args), c("ext", "cx", "cy", "width", "height", "xlim", "ylim", "relative"))]
 	args_other <- args[setdiff(names(args), names(args_bb))]
 
+	x <- do.call("bb", c(list(x=x, projection = .crs_longlat), args_bb))
+
 	if (!requireNamespace("OpenStreetMap", quietly = TRUE)) {
 		stop("OpenStreetMap package needed for this function to work. Please install it.",
 			 call. = FALSE)
@@ -44,14 +45,8 @@ read_osm <- function(x, zoom=NULL, type="osm", minNumTiles=NULL, mergeTiles=NULL
 		optionalArgs <- list(zoom=zoom, type=type, minNumTiles=minNumTiles, mergeTiles=mergeTiles)
 		optionalArgs <- optionalArgs[!sapply(optionalArgs, is.null)]
 		om <- suppressWarnings({do.call("openmap", args = c(list(upperLeft=x[c(4,1)], lowerRight=x[c(2,3)]), optionalArgs))})
-		omr <- raster::raster(om)
 
-		if (use.colortable) {
-		    tab <- raster_colors(raster::values(omr), use.colortable = TRUE)
-		    omr <- raster::raster(omr)
-		    omr <- raster::setValues(omr, as.integer(tab) - 1L)
-		    raster::colortable(omr) <- levels(tab)
-		}
+		omr <- stars::st_as_stars(om)
 
 		attr(omr, "leaflet.provider") <- unname(OSM2LP[type])
 		attr(omr, "is.OSM") <- TRUE

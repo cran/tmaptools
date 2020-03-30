@@ -1,3 +1,8 @@
+version 3.0
+- stars support
+- removed hardcoded proj4 shortcuts
+- geocode_OSM also returns a bounding box if as.sf=TRUE
+
 version 2.0-2
 - sp-based functions marked as deprecated
 - fixed bug in rev_geocode_OSM

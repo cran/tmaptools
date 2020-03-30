@@ -4,9 +4,16 @@
 \alias{geocode_OSM}
 \title{Geocodes a location using OpenStreetMap Nominatim}
 \usage{
-geocode_OSM(q, projection = NULL, return.first.only = TRUE,
-  details = FALSE, as.data.frame = NA, as.sf = FALSE,
-  server = "http://nominatim.openstreetmap.org")
+geocode_OSM(
+  q,
+  projection = NULL,
+  return.first.only = TRUE,
+  details = FALSE,
+  as.data.frame = NA,
+  as.sf = FALSE,
+  geometry = c("point", "bbox"),
+  server = "http://nominatim.openstreetmap.org"
+)
 }
 \arguments{
 \item{q}{a character (vector) that specifies a search query. For instance \code{"India"} or \code{"CBS Weg 11, Heerlen, Netherlands"}.}
@@ -17,9 +24,11 @@ geocode_OSM(q, projection = NULL, return.first.only = TRUE,
 
 \item{details}{provide output details, other than the point coordinates and bounding box}
 
-\item{as.data.frame}{Return the output as a \code{data.frame}. If \code{FALSE}, a list is returned with at least two items: \code{"coords"}, a vector containing the coordinates, and \code{"bbox"}, the corresponding bounding box. By default false, unless \code{q} contains multiple queries}
+\item{as.data.frame}{Return the output as a \code{data.frame}. If \code{FALSE}, a list is returned with at least two items: \code{"coords"}, a vector containing the coordinates, and \code{"bbox"}, the corresponding bounding box. By default false, unless \code{q} contains multiple queries. If \code{as.sf = TRUE} (see below), \code{as.data.frame} will set to \code{TRUE}.}
 
-\item{as.sf}{Return the output as \code{\link[sf:sf]{sf}} object. If \code{TRUE}, \code{return.first.only} will be set to \code{TRUE}.}
+\item{as.sf}{Return the output as \code{\link[sf:sf]{sf}} object. If \code{TRUE}, \code{return.first.only} will be set to \code{TRUE}. Two geometry columns are added: \code{bbox} and \code{point}. The argument \code{geometry} determines which of them is set to the default geometry.}
+
+\item{geometry}{When \code{as.sf}, this arugment determines which column (\code{bbox} or \code{point}) is set as geometry column. Note that the geometry can be changed afterwards with \code{\link[sf:st_set_geometry]{st_set_geometry}}.}
 
 \item{server}{OpenStreetMap Nominatim server name. Could also be a local OSM Nominatim server.}
 }
@@ -34,7 +43,7 @@ Geocodes a location (based on a search query) to coordinates and a bounding box.
 if (require(tmap)) {
     geocode_OSM("India")
     geocode_OSM("CBS Weg 1, Heerlen")
-    geocode_OSM("CBS Weg 1, Heerlen", projection = "rd")
+    geocode_OSM("CBS Weg 1, Heerlen", projection = 28992)
 
     data(metro)
 
@@ -42,8 +51,7 @@ if (require(tmap)) {
     five_cities <- metro[sample(length(metro), 5), ]
 
     # obtain geocode locations from their long names
-    five_cities_geocode <- geocode_OSM(five_cities$name_long)
-    sp::coordinates(five_cities_geocode) <- ~lon+lat
+    five_cities_geocode <- geocode_OSM(five_cities$name_long, as.sf = TRUE)
 
     # change to interactive mode
     current.mode <- tmap_mode("view")
