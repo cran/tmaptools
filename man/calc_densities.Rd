@@ -14,7 +14,7 @@ calc_densities(
 )
 }
 \arguments{
-\item{shp}{a shape object, i.e., an \code{\link[sf:sf]{sf}} object or a \code{\link[sp:SpatialPolygonsDataFrame]{SpatialPolygons(DataFrame)}}}
+\item{shp}{a shape object, i.e., an \code{\link[sf:sf]{sf}} object or a \code{SpatialPolygons(DataFrame)} from the \code{sp} package.}
 
 \item{var}{name(s) of a qualtity variable name contained in the \code{shp} data}
 
@@ -41,7 +41,7 @@ if (require(tmap) && packageVersion("tmap") >= "2.0") {
     NLD_muni <- sf::st_sf(data.frame(NLD_muni, NLD_muni_pop_per_km2))
 
     tm_shape(NLD_muni) +
-    	tm_polygons(c("pop_women_km.2", "pop_women_km.2"),
+    	tm_polygons(c("pop_men_km.2", "pop_women_km.2"),
             title=expression("Population per " * km^2), style="quantile") +
     tm_facets(free.scales = FALSE) +
     tm_layout(panel.show = TRUE, panel.labels=c("Men", "Women"))

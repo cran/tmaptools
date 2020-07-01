@@ -8,6 +8,7 @@ geocode_OSM(
   q,
   projection = NULL,
   return.first.only = TRUE,
+  keep.unfound = FALSE,
   details = FALSE,
   as.data.frame = NA,
   as.sf = FALSE,
@@ -18,9 +19,11 @@ geocode_OSM(
 \arguments{
 \item{q}{a character (vector) that specifies a search query. For instance \code{"India"} or \code{"CBS Weg 11, Heerlen, Netherlands"}.}
 
-\item{projection}{projection in which the coordinates and bounding box are returned. Either a \code{\link[sp:CRS]{CRS}} object or a character value. If it is a character, it can either be a \code{PROJ.4} character string or a shortcut. See \code{\link{get_proj4}} for a list of shortcut values. By default latitude longitude coordinates.}
+\item{projection}{projection in which the coordinates and bounding box are returned. See \code{\link[sf:st_crs]{st_crs}} for details. By default latitude longitude coordinates (EPSG 4326).}
 
 \item{return.first.only}{Only return the first result}
+
+\item{keep.unfound}{Keep list items / data.frame rows with \code{NA}s for unfound search terms. By default \code{FALSE}}
 
 \item{details}{provide output details, other than the point coordinates and bounding box}
 
@@ -28,12 +31,12 @@ geocode_OSM(
 
 \item{as.sf}{Return the output as \code{\link[sf:sf]{sf}} object. If \code{TRUE}, \code{return.first.only} will be set to \code{TRUE}. Two geometry columns are added: \code{bbox} and \code{point}. The argument \code{geometry} determines which of them is set to the default geometry.}
 
-\item{geometry}{When \code{as.sf}, this arugment determines which column (\code{bbox} or \code{point}) is set as geometry column. Note that the geometry can be changed afterwards with \code{\link[sf:st_set_geometry]{st_set_geometry}}.}
+\item{geometry}{When \code{as.sf}, this arugment determines which column (\code{bbox} or \code{point}) is set as geometry column. Note that the geometry can be changed afterwards with \code{\link[sf:st_geometry]{st_set_geometry}}.}
 
 \item{server}{OpenStreetMap Nominatim server name. Could also be a local OSM Nominatim server.}
 }
 \value{
-If \code{as.SPDF} then a \code{\link[sp:SpatialPointsDataFrame]{SpatialPointsDataFrame}} is returned. Else, if \code{as.data.frame}, then a \code{data.frame} is returned, else a list.
+If \code{as.sf} then a \code{\link[sf:sf]{sf}} object is returned. Else, if \code{as.data.frame}, then a \code{data.frame} is returned, else a list.
 }
 \description{
 Geocodes a location (based on a search query) to coordinates and a bounding box. Similar to geocode from the ggmap package. It uses OpenStreetMap Nominatim. For processing large amount of queries, please read the usage policy (\url{http://wiki.openstreetmap.org/wiki/Nominatim_usage_policy}).
