@@ -14,6 +14,7 @@ bb(
   xlim = NULL,
   ylim = NULL,
   relative = FALSE,
+  asp.target = NULL,
   asp.limit = NULL,
   current.projection = NULL,
   projection = NULL,
@@ -42,6 +43,8 @@ bb(
 \item{ylim}{limits of the y-axis. See \code{xlim}.}
 
 \item{relative}{boolean that determines whether relative values are used for \code{width}, \code{height}, \code{xlim} and \code{ylim} or absolute. If \code{x} is unspecified, \code{relative} is set to \code{"FALSE"}.}
+
+\item{asp.target}{target aspect ratio, which is width/height, of the returned bounding box.}
 
 \item{asp.limit}{maximum aspect ratio, which is width/height. Number greater than or equal to 1. For landscape bounding boxes, \code{1/asp.limit} will be used. The returned bounding box will have an aspect ratio between \code{1/asp.limit} and \code{asp.limit}.}
 
@@ -77,7 +80,7 @@ A new bounding box can be created from scratch as follows:
 }
 }
 \examples{
-if (require(tmap) && packageVersion("tmap") >= "2.0") {
+if (require(tmap)) {
 
     ## load shapes
     data(NLD_muni)
@@ -89,14 +92,17 @@ if (require(tmap) && packageVersion("tmap") >= "2.0") {
     ## extent it by factor 1.10
     bb(NLD_muni, ext=1.10)
 
-    ## convert to longlat
-    bb(NLD_muni, projection=4326)
-
-    ## change existing bounding box
-    bb(NLD_muni, ext=1.5)
+    ## double the width
     bb(NLD_muni, width=2, relative = TRUE)
+
+    ## crop both dimensions from 0.25 to 0.75
     bb(NLD_muni, xlim=c(.25, .75), ylim=c(.25, .75), relative = TRUE)
 
+    ## extent it such that aspect ratio is 1
+    bb(NLD_muni, asp.target = 1)
+
+    ## convert to longlat (EPSG 4326)
+    bb(NLD_muni, projection=4326)
 }
 
 \dontrun{
